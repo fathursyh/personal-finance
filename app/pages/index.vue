@@ -1,10 +1,13 @@
 <script setup lang="ts">
 import type { RoutePathSchema } from '@typed-router/__paths'
+const config = useRuntimeConfig()
+const APP_VERSION = config.public.appVersion;
 </script>
 
 <template>
   <div>
     <UPageHero
+      :headline="`Ver. ${APP_VERSION}`"
       title="Financial Tracker"
       description="A quick finance tracker that will save you from hours of personal audit at the end of the month. One message away to update your tracker."
       :links="[{
@@ -15,7 +18,7 @@ import type { RoutePathSchema } from '@typed-router/__paths'
       }, {
         label: 'Register for free',
         to: '/register' satisfies RoutePathSchema,
-        icon: 'i-simple-icons-github',
+        icon: 'i-lucide-user-plus',
         size: 'xl',
         color: 'neutral',
         variant: 'subtle'
@@ -67,7 +70,7 @@ import type { RoutePathSchema } from '@typed-router/__paths'
           label: 'View on GitHub',
           to: 'https://github.com/nuxt-ui-templates/starter',
           target: '_blank',
-          icon: 'i-simple-icons-github',
+          icon: 'i-lucide-github',
           color: 'neutral',
           variant: 'outline'
         }]"

@@ -26,5 +26,10 @@ export default defineNuxtConfig({
         braceStyle: '1tbs'
       }
     }
+  },
+  runtimeConfig: {
+    public: {
+      appVersion: import.meta.env.PUBLIC_APP_VERSION
+    }
   }
 })

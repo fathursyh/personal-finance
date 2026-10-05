@@ -42,7 +42,7 @@ useSeoMeta({
         <UButton
           to="https://github.com/fathursyh"
           target="_blank"
-          icon="i-simple-icons-github"
+          icon="i-lucide-github"
           aria-label="GitHub"
           color="neutral"
           variant="ghost"
@@ -54,7 +54,7 @@ useSeoMeta({
       <NuxtPage />
     </UMain>
 
-    <USeparator icon="i-simple-icons-nuxtdotjs" />
+    <USeparator icon="i-lucide-wallet" />
 
     <UFooter>
       <template #left>
@@ -67,7 +67,7 @@ useSeoMeta({
         <UButton
           to="https://github.com/fathursyh"
           target="_blank"
-          icon="i-simple-icons-github"
+          icon="i-lucide-github"
           aria-label="GitHub"
           color="neutral"
           variant="ghost"
