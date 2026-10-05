@@ -2,6 +2,12 @@
 import { reactive, ref } from 'vue'
 import z from 'zod'
 
+definePageMeta({
+  layout: 'public',
+  auth: { unauthenticatedOnly: true, navigateAuthenticatedTo: '/dashboard' }
+})
+
+const { signUp } = useAuth()
 const toast = useToast()
 
 const RegisterSchema = z.object({
@@ -25,12 +31,30 @@ const form = reactive({
 const showPassword = ref(false)
 const showConfirmPassword = ref(false)
 
-function handleSubmit() {
-  console.log('Register submitted:', form)
-  toast.add({
-    title: 'Account Created',
-    description: 'Your new account has been successfully created'
-  })
+const loading = ref(false)
+
+async function handleSubmit() {
+  loading.value = true
+  try {
+    // signUp creates the account, then logs in with the same credentials.
+    await signUp(
+      { name: form.name, email: form.email, password: form.password },
+      { callbackUrl: '/dashboard', external: false }
+    )
+    toast.add({
+      title: 'Account Created',
+      description: 'Your new account has been successfully created'
+    })
+  } catch (error) {
+    const err = error as { statusMessage?: string, data?: { statusMessage?: string } }
+    toast.add({
+      title: 'Registration failed',
+      description: err.data?.statusMessage ?? err.statusMessage ?? 'Something went wrong',
+      color: 'error'
+    })
+  } finally {
+    loading.value = false
+  }
 }
 </script>
 
@@ -83,7 +107,7 @@ function handleSubmit() {
           </UInput>
         </UFormField>
 
-        <UButton type="submit" block class="mt-2">
+        <UButton type="submit" block class="mt-2" :loading="loading">
           Create Account
         </UButton>
       </UForm>

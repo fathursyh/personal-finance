@@ -1,76 +1,81 @@
 <script setup lang="ts">
 import type { RoutePathSchema } from '@typed-router/__paths'
+
+definePageMeta({
+  layout: 'public',
+  auth: false
+})
+
 const config = useRuntimeConfig()
-const APP_VERSION = config.public.appVersion;
+const APP_VERSION = config.public.appVersion || '1.00';
 </script>
 
 <template>
   <div>
     <UPageHero
       :headline="`Ver. ${APP_VERSION}`"
-      title="Financial Tracker"
-      description="A quick finance tracker that will save you from hours of personal audit at the end of the month. One message away to update your tracker."
+      title="Financial clarity without the spreadsheet headache"
+      description="Stop spending hours auditing bank statements at the end of every month. Track expenses instantly, monitor cash flow, and know exactly where your money goes in seconds."
       :links="[{
-        label: 'Get started',
-        to: '/dashboard' satisfies RoutePathSchema,
+        label: 'Start tracking free',
+        to: '/register' satisfies RoutePathSchema,
         trailingIcon: 'i-lucide-arrow-right',
         size: 'xl'
       }, {
-        label: 'Register for free',
-        to: '/register' satisfies RoutePathSchema,
-        icon: 'i-lucide-user-plus',
+        label: 'View live demo',
+        to: '/dashboard' satisfies RoutePathSchema,
+        icon: 'i-lucide-layout-dashboard',
         size: 'xl',
         color: 'neutral',
         variant: 'subtle'
       }]"
     />
+
     <UPageSection
       id="features"
-      title="Everything you need to keep tracking of your spending"
-      description="Start with a solid foundation. This template includes all the essentials for building production-ready applications with Nuxt UI's powerful component system."
+      title="Take full control of your daily cash flow"
+      description="Designed for people who want complete visibility into their finances without tedious manual accounting."
       :features="[{
-        icon: 'i-lucide-rocket',
-        title: 'Production-ready from day one',
-        description: 'Pre-configured with TypeScript, ESLint, Tailwind CSS, and all the best practices. Focus on building features, not setting up tooling.'
+        icon: 'i-lucide-receipt',
+        title: '3-Second Expense Logging',
+        description: 'Record daily purchases on the fly with smart auto-categorization. No complicated forms or receipt backlogs at month-end.'
       }, {
-        icon: 'i-lucide-palette',
-        title: 'Beautiful by default',
-        description: 'Leveraging Nuxt UI\'s design system with automatic dark mode, consistent spacing, and polished components that look great out of the box.'
+        icon: 'i-lucide-chart-pie',
+        title: 'Visual Spending Insights',
+        description: 'See breakdown charts by category, merchant, or timeframe at a glance. Spot lifestyle inflation and unnecessary leaks instantly.'
       }, {
-        icon: 'i-lucide-zap',
-        title: 'Lightning fast',
-        description: 'Optimized for performance with SSR/SSG support, automatic code splitting, and edge-ready deployment. Your users will love the speed.'
+        icon: 'i-lucide-calendar-clock',
+        title: 'Subscription & Bill Tracker',
+        description: 'Never miss a due date or pay for a forgotten service again. Track recurring charges and forecast upcoming monthly commitments.'
       }, {
-        icon: 'i-lucide-blocks',
-        title: '100+ components included',
-        description: 'Access Nuxt UI\'s comprehensive component library. From forms to navigation, everything is accessible, responsive, and customizable.'
+        icon: 'i-lucide-file-spreadsheet',
+        title: 'One-Click Month-End Audits',
+        description: 'Generate polished monthly performance summaries automatically. Export tax-ready reports to CSV or PDF in a single tap.'
       }, {
-        icon: 'i-lucide-code-2',
-        title: 'Developer experience first',
-        description: 'Auto-imports, hot module replacement, and TypeScript support. Write less boilerplate and ship more features.'
+        icon: 'i-lucide-piggy-bank',
+        title: 'Targeted Savings Goals',
+        description: 'Create envelopes for emergency funds, vacations, or debt payoffs. Track realistic target dates with automated progress meters.'
       }, {
         icon: 'i-lucide-shield-check',
-        title: 'Built for scale',
-        description: 'Enterprise-ready architecture with proper error handling, SEO optimization, and security best practices built-in.'
+        title: 'Private & Secure by Default',
+        description: 'Your financial habits stay strictly yours. Enjoy client-side encryption, no aggressive ad tracking, and complete data export portability.'
       }]"
     />
 
     <UPageSection>
       <UPageCTA
-        title="Ready to build your next Nuxt app?"
-        description="Join thousands of developers building with Nuxt and Nuxt UI. Get this template and start shipping today."
+        title="Ready to end month-end financial stress?"
+        description="Join users who spend less than 2 minutes a week keeping their personal finances in check."
         variant="subtle"
         :links="[{
-          label: 'Start building',
-          to: 'https://ui.nuxt.com/docs/getting-started/installation/nuxt',
-          target: '_blank',
+          label: 'Create your free account',
+          to: '/register' satisfies RoutePathSchema,
           trailingIcon: 'i-lucide-arrow-right',
-          color: 'neutral'
+          color: 'primary'
         }, {
-          label: 'View on GitHub',
-          to: 'https://github.com/nuxt-ui-templates/starter',
-          target: '_blank',
-          icon: 'i-lucide-github',
+          label: 'Explore dashboard',
+          to: '/dashboard' satisfies RoutePathSchema,
+          icon: 'i-lucide-arrow-up-right',
           color: 'neutral',
           variant: 'outline'
         }]"

@@ -15,7 +15,9 @@ const title = 'Financial Tracker'
 const description = 'A financial tracker for people who has high financial awareness.'
 
 useSeoMeta({
-  title,
+  titleTemplate: (titleChunk) => {
+    return titleChunk ? `${titleChunk} - ${title}` : title
+  },
   description,
   ogTitle: title,
   ogDescription: description,
@@ -26,53 +28,8 @@ useSeoMeta({
 
 <template>
   <UApp>
-    <UHeader>
-      <template #left>
-        <NuxtLink
-          to="/"
-          class="focus-visible:outline-3 outline-primary/25 rounded-md p-1 -ms-1"
-        >
-          <AppLogo class="w-auto h-6 shrink-0" />
-        </NuxtLink>
-      </template>
-
-      <template #right>
-        <UColorModeButton />
-
-        <UButton
-          to="https://github.com/fathursyh"
-          target="_blank"
-          icon="i-lucide-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
-    </UHeader>
-
-    <UMain>
+    <NuxtLayout>
       <NuxtPage />
-    </UMain>
-
-    <USeparator icon="i-lucide-wallet" />
-
-    <UFooter>
-      <template #left>
-        <p class="text-sm text-muted">
-          Built with Nuxt UI • © {{ new Date().getFullYear() }}
-        </p>
-      </template>
-
-      <template #right>
-        <UButton
-          to="https://github.com/fathursyh"
-          target="_blank"
-          icon="i-lucide-github"
-          aria-label="GitHub"
-          color="neutral"
-          variant="ghost"
-        />
-      </template>
-    </UFooter>
+    </NuxtLayout>
   </UApp>
 </template>
