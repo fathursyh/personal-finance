@@ -11,8 +11,9 @@ useHead({
   title: 'Overview'
 })
 
-const { budgets, fetchBudgets, deleteBudget } = useBudgets()
-const { transactions, fetchTransactions, deleteTransaction, selectedMonth } = useTransactions()
+const user = useSupabaseUser()
+const { budgets, loading: budgetsLoading, fetchBudgets, deleteBudget } = useBudgets()
+const { transactions, loading: txsLoading, fetchTransactions, deleteTransaction, selectedMonth } = useTransactions()
 const {
   budgetSummaries,
   totalBudget,
@@ -27,12 +28,28 @@ const isTransactionModalOpen = ref(false)
 const budgetToEdit = ref<BudgetSummaryItem | null>(null)
 const transactionToEdit = ref<TransactionWithBudget | null>(null)
 const defaultBudgetId = ref<string | null>(null)
+const isInitialLoading = ref(true)
+
+const isLoading = computed(() => isInitialLoading.value || ((budgetsLoading.value && budgets.value.length === 0) || (txsLoading.value && transactions.value.length === 0)))
 
 onMounted(async () => {
-  await Promise.all([
-    fetchBudgets(),
-    fetchTransactions()
-  ])
+  try {
+    await Promise.all([
+      fetchBudgets(),
+      fetchTransactions()
+    ])
+  } finally {
+    isInitialLoading.value = false
+  }
+})
+
+watch(user, async (newUser) => {
+  if (newUser) {
+    await Promise.all([
+      fetchBudgets(),
+      fetchTransactions()
+    ])
+  }
 })
 
 function openNewBudgetModal() {
@@ -123,9 +140,58 @@ function getPaymentIcon(method: string) {
       </div>
     </div>
 
+    <!-- Loading State Skeleton -->
+    <div
+      v-if="isLoading"
+      class="space-y-6"
+    >
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <UCard
+          v-for="i in 4"
+          :key="i"
+        >
+          <div class="flex items-center justify-between">
+            <USkeleton class="h-4 w-28" />
+            <USkeleton class="size-5 rounded-full" />
+          </div>
+          <div class="mt-4 flex items-baseline justify-between">
+            <USkeleton class="h-7 w-32" />
+            <USkeleton class="h-4 w-16" />
+          </div>
+        </UCard>
+      </div>
+
+      <div class="space-y-4">
+        <div class="flex items-center justify-between">
+          <USkeleton class="h-6 w-32" />
+          <USkeleton class="h-7 w-24" />
+        </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <UCard
+            v-for="i in 3"
+            :key="i"
+            class="h-40 flex flex-col justify-between"
+          >
+            <div class="flex items-center justify-between">
+              <USkeleton class="h-5 w-28" />
+              <USkeleton class="size-6 rounded-md" />
+            </div>
+            <div class="space-y-2 my-2">
+              <USkeleton class="h-4 w-full" />
+              <USkeleton class="h-2 w-full rounded-full" />
+            </div>
+            <div class="flex justify-between">
+              <USkeleton class="h-4 w-16" />
+              <USkeleton class="h-4 w-20" />
+            </div>
+          </UCard>
+        </div>
+      </div>
+    </div>
+
     <!-- Onboarding Empty State: When user has no budgets yet -->
     <div
-      v-if="budgets.length === 0"
+      v-else-if="budgets.length === 0"
       class="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center"
     >
       <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">

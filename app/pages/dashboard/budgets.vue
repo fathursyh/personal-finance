@@ -10,7 +10,8 @@ useHead({
   title: 'Budgets - Financial Tracker'
 })
 
-const { budgets, fetchBudgets, deleteBudget } = useBudgets()
+const user = useSupabaseUser()
+const { budgets, loading, fetchBudgets, deleteBudget } = useBudgets()
 const { fetchTransactions } = useTransactions()
 const {
   budgetSummaries,
@@ -23,12 +24,28 @@ const {
 const isBudgetModalOpen = ref(false)
 const budgetToEdit = ref<BudgetSummaryItem | null>(null)
 const searchQuery = ref('')
+const isInitialLoading = ref(true)
+
+const isLoading = computed(() => isInitialLoading.value || (loading.value && budgets.value.length === 0))
 
 onMounted(async () => {
-  await Promise.all([
-    fetchBudgets(),
-    fetchTransactions()
-  ])
+  try {
+    await Promise.all([
+      fetchBudgets(),
+      fetchTransactions()
+    ])
+  } finally {
+    isInitialLoading.value = false
+  }
+})
+
+watch(user, async (newUser) => {
+  if (newUser) {
+    await Promise.all([
+      fetchBudgets(),
+      fetchTransactions()
+    ])
+  }
 })
 
 const filteredBudgets = computed(() => {
@@ -165,9 +182,34 @@ async function handleDeleteBudget(budget: BudgetSummaryItem) {
       </p>
     </div>
 
+    <!-- Skeleton loading when loading -->
+    <div
+      v-if="isLoading"
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+    >
+      <UCard
+        v-for="i in 3"
+        :key="i"
+        class="h-44 flex flex-col justify-between"
+      >
+        <div class="flex items-center justify-between">
+          <USkeleton class="h-5 w-28" />
+          <USkeleton class="size-6 rounded-md" />
+        </div>
+        <div class="space-y-2 my-4">
+          <USkeleton class="h-4 w-full" />
+          <USkeleton class="h-2 w-full rounded-full" />
+        </div>
+        <div class="flex justify-between">
+          <USkeleton class="h-4 w-16" />
+          <USkeleton class="h-4 w-20" />
+        </div>
+      </UCard>
+    </div>
+
     <!-- Empty State: Zero Budgets -->
     <div
-      v-if="budgets.length === 0"
+      v-else-if="budgets.length === 0"
       class="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-12 text-center"
     >
       <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">

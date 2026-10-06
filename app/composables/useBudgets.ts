@@ -9,13 +9,21 @@ export function useBudgets() {
   const loading = useState<boolean>('app-budgets-loading', () => false)
 
   async function fetchBudgets() {
-    if (!user.value) {
-      budgets.value = []
-      return
-    }
-
     loading.value = true
     try {
+      let activeUser = user.value
+      if (!activeUser) {
+        const { data: authData } = await supabase.auth.getUser()
+        if (authData?.user) {
+          activeUser = authData.user as unknown as typeof user.value
+        }
+      }
+
+      if (!activeUser) {
+        budgets.value = []
+        return
+      }
+
       const { data, error } = await supabase
         .from('budgets')
         .select('*')

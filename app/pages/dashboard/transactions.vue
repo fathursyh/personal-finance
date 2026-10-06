@@ -10,9 +10,11 @@ useHead({
   title: 'Transactions - Financial Tracker'
 })
 
+const user = useSupabaseUser()
 const { budgets, fetchBudgets } = useBudgets()
 const {
   transactions,
+  loading: txsLoading,
   selectedMonth,
   fetchTransactions,
   deleteTransaction
@@ -27,6 +29,9 @@ const isTransactionModalOpen = ref(false)
 const isBudgetModalOpen = ref(false)
 const transactionToEdit = ref<TransactionWithBudget | null>(null)
 const defaultBudgetId = ref<string | null>(null)
+const isInitialLoading = ref(true)
+
+const isLoading = computed(() => isInitialLoading.value || (txsLoading.value && transactions.value.length === 0))
 
 // Filters
 const searchQuery = ref('')
@@ -35,10 +40,23 @@ const selectedPaymentMethod = ref<string>('all')
 const selectedType = ref<string>('all')
 
 onMounted(async () => {
-  await Promise.all([
-    fetchBudgets(),
-    fetchTransactions()
-  ])
+  try {
+    await Promise.all([
+      fetchBudgets(),
+      fetchTransactions()
+    ])
+  } finally {
+    isInitialLoading.value = false
+  }
+})
+
+watch(user, async (newUser) => {
+  if (newUser) {
+    await Promise.all([
+      fetchBudgets(),
+      fetchTransactions()
+    ])
+  }
 })
 
 const budgetFilterOptions = computed(() => [
@@ -310,9 +328,30 @@ function getPaymentIcon(method: PaymentMethod) {
     </UCard>
 
     <!-- Ledger Content -->
+    <!-- Case 0: Loading skeleton -->
+    <UCard
+      v-if="isLoading"
+      class="p-4 space-y-4"
+    >
+      <div
+        v-for="i in 5"
+        :key="i"
+        class="flex items-center justify-between py-2 border-b border-default/50"
+      >
+        <div class="flex items-center gap-3">
+          <USkeleton class="size-9 rounded-lg" />
+          <div class="space-y-1">
+            <USkeleton class="h-4 w-36" />
+            <USkeleton class="h-3 w-24" />
+          </div>
+        </div>
+        <USkeleton class="h-5 w-24" />
+      </div>
+    </UCard>
+
     <!-- Case 1: Empty state (No transactions this month) -->
     <div
-      v-if="transactions.length === 0"
+      v-else-if="transactions.length === 0"
       class="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-12 text-center"
     >
       <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">

@@ -24,11 +24,6 @@ export function useTransactions() {
   }
 
   async function fetchTransactions(targetMonth?: string) {
-    if (!user.value) {
-      transactions.value = []
-      return
-    }
-
     const monthToQuery = targetMonth || selectedMonth.value
     if (targetMonth && targetMonth !== selectedMonth.value) {
       selectedMonth.value = targetMonth
@@ -38,6 +33,19 @@ export function useTransactions() {
 
     loading.value = true
     try {
+      let activeUser = user.value
+      if (!activeUser) {
+        const { data: authData } = await supabase.auth.getUser()
+        if (authData?.user) {
+          activeUser = authData.user as unknown as typeof user.value
+        }
+      }
+
+      if (!activeUser) {
+        transactions.value = []
+        return
+      }
+
       const { data, error } = await supabase
         .from('transactions')
         .select('*, budget:budgets(*)')
