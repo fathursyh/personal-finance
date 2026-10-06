@@ -183,51 +183,5 @@ function handleOpenPreview() {
         </div>
       </div>
     </UCard>
-
-    <!-- Setup Guide for Resend & Cron Automation -->
-    <UCard>
-      <template #header>
-        <div class="flex items-center gap-2">
-          <UIcon
-            name="i-lucide-settings-2"
-            class="size-5 text-muted"
-          />
-          <h3 class="font-semibold text-highlighted">
-            Email Delivery & Cron Automation Setup
-          </h3>
-        </div>
-      </template>
-
-      <div class="space-y-4 text-xs text-muted leading-relaxed">
-        <div>
-          <h4 class="font-semibold text-highlighted text-sm mb-1">
-            1. Configure Resend API Key
-          </h4>
-          <p>
-            Get a free API key at <a
-              href="https://resend.com"
-              target="_blank"
-              class="text-primary font-medium hover:underline"
-            >resend.com</a> (includes 3,000 free emails/month). Add it to your project's <code class="rounded bg-elevated px-1 py-0.5 text-highlighted">.env</code> file:
-          </p>
-          <pre class="mt-2 overflow-x-auto rounded-lg bg-elevated p-3 font-mono text-xs text-highlighted">RESEND_API_KEY=re_123456789...
-RESEND_FROM_EMAIL=Financial Tracker &lt;onboarding@resend.dev&gt;</pre>
-        </div>
-
-        <div class="pt-2 border-t border-default">
-          <h4 class="font-semibold text-highlighted text-sm mb-1">
-            2. End-of-Month Automated Trigger (Cron Job)
-          </h4>
-          <p>
-            To trigger automated emails on the last day of each month for all active users, call the API endpoint:
-          </p>
-          <pre class="mt-2 overflow-x-auto rounded-lg bg-elevated p-3 font-mono text-xs text-highlighted">POST /api/email/monthly-summary
-Header: x-cron-secret: finance-cron-secret-key</pre>
-          <p class="mt-2">
-            You can schedule this via Supabase <code class="rounded bg-elevated px-1 py-0.5 text-highlighted">pg_cron</code>, cron-job.org, or GitHub Actions to run on the last day of every month at 23:00.
-          </p>
-        </div>
-      </div>
-    </UCard>
   </div>
 </template>
