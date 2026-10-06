@@ -1,18 +1,20 @@
 <script setup lang="ts">
-import type { NavigationMenuItem } from '@nuxt/ui';
-import type { RoutePathSchema } from '@typed-router/__paths';
+import type { NavigationMenuItem } from '@nuxt/ui'
+import type { RoutePathSchema } from '@typed-router/__paths'
 
-const navItems: Omit<NavigationMenuItem[], 'to'> & {to?: RoutePathSchema}[] = [
+const user = useSupabaseUser()
+
+const navItems: Omit<NavigationMenuItem[], 'to'> & { to?: RoutePathSchema }[] = [
   {
     label: 'Home',
     to: '/',
     icon: 'i-lucide-home'
   },
-  {
-    label: 'Blogs',
-    to: '/dashboard',
-    icon: 'i-lucide-rss'
-  },
+  // {
+  //   label: 'Blogs',
+  //   to: '/dashboard',
+  //   icon: 'i-lucide-rss'
+  // },
   {
     label: 'Dashboard',
     to: '/dashboard',
@@ -38,22 +40,34 @@ const navItems: Omit<NavigationMenuItem[], 'to'> & {to?: RoutePathSchema}[] = [
       <template #right>
         <UColorModeButton />
 
-        <UButton
-          to="/login"
-          variant="ghost"
-          color="neutral"
-          size="sm"
-        >
-          Sign In
-        </UButton>
+        <template v-if="user">
+          <UButton
+            to="/dashboard"
+            color="primary"
+            size="sm"
+            icon="i-lucide-layout-dashboard"
+          >
+            Dashboard
+          </UButton>
+        </template>
+        <template v-else>
+          <UButton
+            to="/login"
+            variant="ghost"
+            color="neutral"
+            size="sm"
+          >
+            Sign In
+          </UButton>
 
-        <UButton
-          to="/register"
-          color="primary"
-          size="sm"
-        >
-          Get Started
-        </UButton>
+          <UButton
+            to="/register"
+            color="primary"
+            size="sm"
+          >
+            Get Started
+          </UButton>
+        </template>
 
         <UButton
           to="https://github.com/fathursyh"
@@ -75,21 +89,33 @@ const navItems: Omit<NavigationMenuItem[], 'to'> & {to?: RoutePathSchema}[] = [
           <USeparator />
 
           <div class="flex flex-col gap-2">
-            <UButton
-              to="/login"
-              variant="outline"
-              color="neutral"
-              block
-            >
-              Sign In
-            </UButton>
-            <UButton
-              to="/register"
-              color="primary"
-              block
-            >
-              Get Started
-            </UButton>
+            <template v-if="user">
+              <UButton
+                to="/dashboard"
+                color="primary"
+                block
+                icon="i-lucide-layout-dashboard"
+              >
+                Go to Dashboard
+              </UButton>
+            </template>
+            <template v-else>
+              <UButton
+                to="/login"
+                variant="outline"
+                color="neutral"
+                block
+              >
+                Sign In
+              </UButton>
+              <UButton
+                to="/register"
+                color="primary"
+                block
+              >
+                Get Started
+              </UButton>
+            </template>
           </div>
         </div>
       </template>

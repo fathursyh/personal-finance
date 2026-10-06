@@ -2,12 +2,11 @@
 import type { RoutePathSchema } from '@typed-router/__paths'
 
 definePageMeta({
-  layout: 'public',
-  auth: false
+  layout: 'public'
 })
 
 const config = useRuntimeConfig()
-const APP_VERSION = config.public.appVersion || '1.00';
+const APP_VERSION = config.public.appVersion || '1.00'
 </script>
 
 <template>

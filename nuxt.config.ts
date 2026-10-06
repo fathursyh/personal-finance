@@ -5,7 +5,7 @@ export default defineNuxtConfig({
     '@nuxt/ui',
     '@nuxt/image',
     'nuxt-typed-router',
-    '@sidebase/nuxt-auth'
+    '@nuxtjs/supabase'
   ],
 
   devtools: {
@@ -14,8 +14,18 @@ export default defineNuxtConfig({
 
   css: ['~/assets/css/main.css'],
 
+  runtimeConfig: {
+    resendApiKey: process.env.RESEND_API_KEY || '',
+    resendFromEmail: process.env.RESEND_FROM_EMAIL || 'Financial Tracker <onboarding@resend.dev>',
+    cronSecret: process.env.CRON_SECRET || 'finance-cron-secret-key',
+    public: {
+      appVersion: import.meta.env.PUBLIC_APP_VERSION || '1.00',
+      appUrl: process.env.NUXT_PUBLIC_SITE_URL || 'http://localhost:3000'
+    }
+  },
+
   routeRules: {
-    '/': { prerender: true }
+
   },
 
   compatibilityDate: '2026-06-30',
@@ -28,47 +38,13 @@ export default defineNuxtConfig({
       }
     }
   },
-  runtimeConfig: {
-    public: {
-      appVersion: import.meta.env.PUBLIC_APP_VERSION
-    }
-  },
 
-  // No database yet: users and sessions are persisted as files in ./.data (gitignored).
-  nitro: {
-    storage: {
-      users: { driver: 'fs', base: './.data/users' },
-      sessions: { driver: 'fs', base: './.data/sessions' }
+  supabase: {
+    redirectOptions: {
+      login: '/login',
+      callback: '/confirm',
+      exclude: ['/', '/register'],
+      saveRedirectToCookie: false
     }
-  },
-
-  auth: {
-    baseURL: '/api/auth',
-    provider: {
-      type: 'local',
-      endpoints: {
-        signIn: { path: '/login', method: 'post' },
-        signOut: { path: '/logout', method: 'post' },
-        signUp: { path: '/register', method: 'post' },
-        getSession: { path: '/session', method: 'get' }
-      },
-      pages: {
-        login: '/login'
-      },
-      session: {
-        dataType: { id: 'string', name: 'string', email: 'string' }
-      },
-      token: {
-        signInResponseTokenPointer: '/token',
-        type: 'Token',
-        cookieName: 'auth.token',
-        headerName: 'Authorization',
-        maxAgeInSeconds: 1800,
-        sameSiteAttribute: 'lax',
-        secureCookieAttribute: false,
-        httpOnlyCookieAttribute: false
-      }
-    },
-    globalAppMiddleware: true
   }
 })
