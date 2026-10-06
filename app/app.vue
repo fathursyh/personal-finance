@@ -21,7 +21,7 @@ useSeoMeta({
   description,
   ogTitle: title,
   ogDescription: description,
-  ogImage: 'https://ui.nuxt.com/assets/templates/nuxt/starter-light.png',
+  ogImage: 'https://financial-tracker-ftr.vercel.app/home.jpg',
   twitterCard: 'summary_large_image'
 })
 </script>
