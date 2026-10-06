@@ -7,7 +7,7 @@ const RESEND_API_KEY = Deno.env.get('RESEND_API_KEY')
 const RESEND_FROM = Deno.env.get('RESEND_FROM_EMAIL') || 'Financial Tracker <onboarding@resend.dev>'
 const SUPABASE_URL = Deno.env.get('SUPABASE_URL')!
 const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
-const CRON_SECRET = Deno.env.get('CRON_SECRET') || 'finance-cron-secret-key'
+const CRON_SECRET = Deno.env.get('CRON_SECRET') || 'financial-fathur-ganteng'
 
 function formatRupiah(amount: number): string {
   return new Intl.NumberFormat('id-ID', {
