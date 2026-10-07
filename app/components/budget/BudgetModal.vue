@@ -123,14 +123,10 @@ async function handleSubmit() {
           name="amount"
           required
         >
-          <UInput
-            v-model.number="form.amount"
-            type="number"
-            step="1000"
-            min="1000"
-            placeholder="1000000"
+          <CurrencyInput
+            v-model="form.amount"
+            placeholder="1.000.000"
             icon="i-lucide-banknote"
-            class="w-full"
           />
         </UFormField>
 
