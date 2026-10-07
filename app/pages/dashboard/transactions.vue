@@ -35,6 +35,7 @@ const selectedBudgetId = ref<string>(initialBudgetId)
 const searchQuery = ref('')
 const selectedPaymentMethod = ref<string>('all')
 const selectedType = ref<string>('all')
+const showFilters = ref(false)
 
 watch(() => route.query.budget, (newBudgetId) => {
   if (typeof newBudgetId === 'string' && newBudgetId) {
@@ -167,14 +168,14 @@ function handleOpenCreateBudgetFromTx() {
 </script>
 
 <template>
-  <div class="space-y-6 pb-20">
+  <div class="space-y-3 sm:space-y-4 pb-20">
     <!-- Header -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-highlighted">
+        <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-highlighted">
           Transaction Ledger
         </h2>
-        <p class="text-sm text-muted">
+        <p class="hidden sm:block text-xs text-muted">
           Daily chronological timeline categorized by budget buckets.
         </p>
       </div>
@@ -185,6 +186,8 @@ function handleOpenCreateBudgetFromTx() {
         <UButton
           icon="i-lucide-plus"
           color="primary"
+          size="xs"
+          class="hidden sm:inline-flex"
           @click="openNewTransactionModal()"
         >
           Add Transaction
@@ -200,55 +203,64 @@ function handleOpenCreateBudgetFromTx() {
     />
 
     <!-- Filters & Search Toolbar -->
-    <UCard class="p-1">
-      <div class="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <div>
-          <UInput
-            v-model="searchQuery"
-            icon="i-lucide-search"
-            placeholder="Search description..."
-            size="sm"
-            class="w-full"
-          />
-        </div>
+    <UCard class="p-2 sm:p-2.5">
+      <div class="flex items-center gap-1.5 sm:gap-2">
+        <UInput
+          v-model="searchQuery"
+          icon="i-lucide-search"
+          placeholder="Search description..."
+          size="xs"
+          class="flex-1"
+        />
 
-        <div>
-          <USelect
-            v-model="selectedBudgetId"
-            :items="budgetFilterOptions"
-            size="sm"
-            class="w-full"
-          />
-        </div>
+        <UButton
+          :icon="showFilters ? 'i-lucide-filter-x' : 'i-lucide-filter'"
+          :color="hasActiveFilters ? 'primary' : 'neutral'"
+          :variant="hasActiveFilters ? 'subtle' : 'ghost'"
+          size="xs"
+          class="sm:hidden"
+          :title="showFilters ? 'Hide filters' : 'Show filters'"
+          @click="showFilters = !showFilters"
+        >
+          Filters
+        </UButton>
 
-        <div>
-          <USelect
-            v-model="selectedPaymentMethod"
-            :items="paymentMethodOptions"
-            size="sm"
-            class="w-full"
-          />
-        </div>
+        <UButton
+          v-if="hasActiveFilters"
+          icon="i-lucide-x"
+          color="neutral"
+          variant="ghost"
+          size="xs"
+          title="Reset filters"
+          aria-label="Reset filters"
+          @click="resetFilters"
+        />
+      </div>
 
-        <div class="flex items-center gap-2">
-          <USelect
-            v-model="selectedType"
-            :items="typeOptions"
-            size="sm"
-            class="w-full"
-          />
+      <div
+        class="gap-1.5 sm:gap-2 mt-2"
+        :class="showFilters ? 'grid grid-cols-1 sm:grid-cols-3' : 'hidden sm:grid sm:grid-cols-3'"
+      >
+        <USelect
+          v-model="selectedBudgetId"
+          :items="budgetFilterOptions"
+          size="xs"
+          class="w-full"
+        />
 
-          <UButton
-            v-if="hasActiveFilters"
-            icon="i-lucide-x"
-            color="neutral"
-            variant="ghost"
-            size="sm"
-            title="Reset filters"
-            aria-label="Reset filters"
-            @click="resetFilters"
-          />
-        </div>
+        <USelect
+          v-model="selectedPaymentMethod"
+          :items="paymentMethodOptions"
+          size="xs"
+          class="w-full"
+        />
+
+        <USelect
+          v-model="selectedType"
+          :items="typeOptions"
+          size="xs"
+          class="w-full"
+        />
       </div>
     </UCard>
 
@@ -344,17 +356,17 @@ function handleOpenCreateBudgetFromTx() {
     </UCard>
 
     <!-- Floating Action Button (FAB) -->
-    <div class="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-30">
+    <div class="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-30">
       <button
         type="button"
-        class="flex size-14 items-center justify-center rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-rose-500/30 cursor-pointer"
+        class="flex size-12 sm:size-14 items-center justify-center rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-rose-500/30 cursor-pointer"
         title="Add Transaction"
         aria-label="Add Transaction"
         @click="openNewTransactionModal()"
       >
         <UIcon
           name="i-lucide-plus"
-          class="size-7 stroke-[2.5]"
+          class="size-6 sm:size-7 stroke-[2.5]"
         />
       </button>
     </div>

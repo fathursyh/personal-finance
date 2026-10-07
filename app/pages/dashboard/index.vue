@@ -129,14 +129,14 @@ function getPaymentIcon(method: string) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-3.5 sm:space-y-5 pb-16">
     <!-- Top Action Bar -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-highlighted">
+        <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-highlighted">
           Financial Overview
         </h2>
-        <p class="text-sm text-muted">
+        <p class="hidden sm:block text-xs sm:text-sm text-muted">
           Track budgets, record daily expenses, and keep spending in control.
         </p>
       </div>
@@ -148,6 +148,8 @@ function getPaymentIcon(method: string) {
           v-if="budgets.length > 0"
           icon="i-lucide-plus"
           color="primary"
+          size="xs"
+          class="hidden sm:inline-flex"
           @click="openNewTransactionModal(selectedBudgetId || undefined)"
         >
           Add Transaction
@@ -158,46 +160,47 @@ function getPaymentIcon(method: string) {
     <!-- Loading State Skeleton -->
     <div
       v-if="isLoading"
-      class="space-y-6"
+      class="space-y-4"
     >
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4 sm:gap-3">
         <UCard
           v-for="i in 4"
           :key="i"
+          class="p-2.5 sm:p-4"
         >
           <div class="flex items-center justify-between">
-            <USkeleton class="h-4 w-28" />
-            <USkeleton class="size-5 rounded-full" />
+            <USkeleton class="h-3 w-16 sm:w-24" />
+            <USkeleton class="size-4 rounded-full" />
           </div>
-          <div class="mt-4 flex items-baseline justify-between">
-            <USkeleton class="h-7 w-32" />
-            <USkeleton class="h-4 w-16" />
+          <div class="mt-2 flex items-baseline justify-between">
+            <USkeleton class="h-5 sm:h-7 w-20 sm:w-28" />
+            <USkeleton class="h-3 w-10 sm:w-14" />
           </div>
         </UCard>
       </div>
 
-      <div class="space-y-4">
+      <div class="space-y-3">
         <div class="flex items-center justify-between">
-          <USkeleton class="h-6 w-32" />
-          <USkeleton class="h-7 w-24" />
+          <USkeleton class="h-5 w-24 sm:w-32" />
+          <USkeleton class="h-6 w-20" />
         </div>
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3 sm:gap-3">
           <UCard
             v-for="i in 3"
             :key="i"
-            class="h-40 flex flex-col justify-between"
+            class="h-32 flex flex-col justify-between"
           >
             <div class="flex items-center justify-between">
-              <USkeleton class="h-5 w-28" />
-              <USkeleton class="size-6 rounded-md" />
+              <USkeleton class="h-4 w-24" />
+              <USkeleton class="size-5 rounded-md" />
             </div>
-            <div class="space-y-2 my-2">
-              <USkeleton class="h-4 w-full" />
-              <USkeleton class="h-2 w-full rounded-full" />
+            <div class="space-y-1.5 my-2">
+              <USkeleton class="h-3 w-full" />
+              <USkeleton class="h-1.5 w-full rounded-full" />
             </div>
             <div class="flex justify-between">
-              <USkeleton class="h-4 w-16" />
-              <USkeleton class="h-4 w-20" />
+              <USkeleton class="h-3 w-14" />
+              <USkeleton class="h-3 w-16" />
             </div>
           </UCard>
         </div>
@@ -207,24 +210,24 @@ function getPaymentIcon(method: string) {
     <!-- Onboarding Empty State: When user has no budgets yet -->
     <div
       v-else-if="budgets.length === 0"
-      class="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-8 text-center"
+      class="rounded-2xl border-2 border-dashed border-primary/30 bg-primary/5 p-6 sm:p-8 text-center"
     >
-      <div class="mx-auto flex size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-4">
+      <div class="mx-auto flex size-12 sm:size-14 items-center justify-center rounded-2xl bg-primary/10 text-primary mb-3 sm:mb-4">
         <UIcon
           name="i-lucide-piggy-bank"
-          class="size-8"
+          class="size-6 sm:size-8"
         />
       </div>
-      <h3 class="text-xl font-bold text-highlighted">
+      <h3 class="text-lg sm:text-xl font-bold text-highlighted">
         Step 1: Create your budgets first
       </h3>
-      <p class="mx-auto mt-2 max-w-md text-sm text-muted">
+      <p class="mx-auto mt-1.5 sm:mt-2 max-w-md text-xs sm:text-sm text-muted">
         Start by setting monthly spending limits for categories like Food & Dining, Rent, Groceries, or Entertainment.
         Once created, you can log transactions against them and see exactly how much you have left.
       </p>
-      <div class="mt-6 flex justify-center gap-3">
+      <div class="mt-4 sm:mt-6 flex justify-center gap-3">
         <UButton
-          size="lg"
+          size="sm"
           color="primary"
           icon="i-lucide-plus"
           @click="openNewBudgetModal"
@@ -237,96 +240,96 @@ function getPaymentIcon(method: string) {
     <!-- Stats Grid & Main Content (When budgets exist) -->
     <template v-else>
       <!-- Stats Grid: 1. Expense This Month | 2. Income This Month | 3. Remaining to Spend | 4. Total Budget -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4 sm:gap-3">
         <!-- 1. Income This Month -->
-        <UCard>
+        <UCard class="p-2.5 sm:p-4">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-muted">
-              Income This Month
+            <p class="text-[11px] sm:text-xs font-medium text-muted truncate">
+              Income
             </p>
             <UIcon
               name="i-lucide-trending-up"
-              class="size-5 text-emerald-500"
+              class="size-3.5 sm:size-4 text-emerald-500"
             />
           </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <p class="text-2xl font-semibold text-emerald-500">
+          <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
+            <p class="text-sm sm:text-xl lg:text-2xl font-bold text-emerald-500 truncate">
               {{ formatCurrency(totalIncome) }}
             </p>
-            <span class="text-xs font-medium text-muted">
+            <span class="text-[9px] sm:text-xs font-medium text-muted truncate">
               Total inflow
             </span>
           </div>
         </UCard>
 
         <!-- 2. Expense This Month -->
-        <UCard>
+        <UCard class="p-2.5 sm:p-4">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-muted">
-              Expense This Month
+            <p class="text-[11px] sm:text-xs font-medium text-muted truncate">
+              Expense
             </p>
             <UIcon
               name="i-lucide-trending-down"
-              class="size-5 text-rose-500"
+              class="size-3.5 sm:size-4 text-rose-500"
             />
           </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <p class="text-2xl font-semibold text-highlighted">
+          <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
+            <p class="text-sm sm:text-xl lg:text-2xl font-bold text-highlighted truncate">
               {{ formatCurrency(totalSpent) }}
             </p>
             <span
-              class="text-xs font-medium"
+              class="text-[9px] sm:text-xs font-medium truncate"
               :class="overallPercentage >= 100 ? 'text-rose-500' : 'text-primary'"
             >
-              {{ overallPercentage }}% of budget
+              {{ overallPercentage }}% used
             </span>
           </div>
         </UCard>
 
         <!-- 3. Remaining to Spend (Income - Expense) -->
-        <UCard>
+        <UCard class="p-2.5 sm:p-4">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-muted">
-              Income - Expense
+            <p class="text-[11px] sm:text-xs font-medium text-muted truncate">
+              Net Balance
             </p>
             <UIcon
               name="i-lucide-piggy-bank"
-              class="size-5 text-muted"
+              class="size-3.5 sm:size-4 text-muted"
             />
           </div>
-          <div class="mt-2 flex items-baseline justify-between">
+          <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
             <p
-              class="text-2xl font-semibold"
+              class="text-sm sm:text-xl lg:text-2xl font-bold truncate"
               :class="netBalance < 0 ? 'text-rose-500' : 'text-highlighted'"
             >
               {{ formatCurrency(netBalance) }}
             </p>
             <span
-              class="text-xs font-medium"
+              class="text-[9px] sm:text-xs font-medium truncate"
               :class="netBalance < 0 ? 'text-rose-500' : 'text-emerald-500'"
             >
-              {{ netBalance < 0 ? 'Net deficit' : 'Net positive' }}
+              {{ netBalance < 0 ? 'Deficit' : 'Positive' }}
             </span>
           </div>
         </UCard>
 
         <!-- 4. Total Budget -->
-        <UCard>
+        <UCard class="p-2.5 sm:p-4">
           <div class="flex items-center justify-between">
-            <p class="text-sm font-medium text-muted">
+            <p class="text-[11px] sm:text-xs font-medium text-muted truncate">
               Total Budget
             </p>
             <UIcon
               name="i-lucide-wallet"
-              class="size-5 text-muted"
+              class="size-3.5 sm:size-4 text-muted"
             />
           </div>
-          <div class="mt-2 flex items-baseline justify-between">
-            <p class="text-2xl font-semibold text-highlighted">
+          <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
+            <p class="text-sm sm:text-xl lg:text-2xl font-bold text-highlighted truncate">
               {{ formatCurrency(totalBudget) }}
             </p>
-            <span class="text-xs font-medium text-muted">
-              {{ budgets.length }} {{ budgets.length === 1 ? 'category' : 'categories' }}
+            <span class="text-[9px] sm:text-xs font-medium text-muted truncate">
+              {{ budgets.length }} {{ budgets.length === 1 ? 'cat.' : 'cats.' }}
             </span>
           </div>
         </UCard>
@@ -365,7 +368,7 @@ function getPaymentIcon(method: string) {
           </div>
         </div>
 
-        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+        <div class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4">
           <BudgetCard
             v-for="b in budgetSummaries"
             :key="b.id"
@@ -508,11 +511,11 @@ function getPaymentIcon(method: string) {
           <div
             v-for="tx in selectedBudgetTransactions"
             :key="tx.id"
-            class="flex items-center justify-between py-3 hover:bg-elevated/50 px-2 rounded-lg transition-colors"
+            class="flex items-center justify-between py-1.5 sm:py-2 hover:bg-elevated/50 px-2 rounded-lg transition-colors"
           >
-            <div class="flex items-center gap-3 min-w-0">
+            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
               <div
-                class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                class="flex size-7 sm:size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 :class="{
                   'bg-emerald-500/10 text-emerald-500': selectedBudget.color === 'emerald',
                   'bg-amber-500/10 text-amber-500': selectedBudget.color === 'amber',
@@ -523,21 +526,21 @@ function getPaymentIcon(method: string) {
               >
                 <UIcon
                   :name="selectedBudget.icon || 'i-lucide-receipt'"
-                  class="size-5"
+                  class="size-3.5 sm:size-4"
                 />
               </div>
 
               <div class="min-w-0 truncate">
-                <p class="text-sm font-medium text-highlighted truncate">
+                <p class="text-xs sm:text-sm font-medium text-highlighted truncate">
                   {{ tx.description }}
                 </p>
-                <p class="text-xs text-muted flex items-center gap-2">
+                <p class="text-[10px] sm:text-xs text-muted flex items-center gap-1.5">
                   <span>{{ tx.date }}</span>
                   <span>•</span>
                   <span class="inline-flex items-center gap-1">
                     <UIcon
                       :name="getPaymentIcon(tx.payment_method)"
-                      class="size-3"
+                      class="size-2.5 sm:size-3"
                     />
                     {{ tx.payment_method }}
                   </span>
@@ -545,9 +548,9 @@ function getPaymentIcon(method: string) {
               </div>
             </div>
 
-            <div class="flex items-center gap-3">
+            <div class="flex items-center gap-2 sm:gap-3">
               <span
-                class="text-sm font-semibold whitespace-nowrap"
+                class="text-xs sm:text-sm font-semibold whitespace-nowrap"
                 :class="tx.type === 'income' ? 'text-emerald-500' : 'text-highlighted'"
               >
                 {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(Number(tx.amount)) }}

@@ -49,14 +49,14 @@ async function handleDeleteBudget(budget: BudgetSummaryItem) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-3.5 sm:space-y-5 pb-16 sm:pb-0">
     <!-- Header -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-highlighted">
+        <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-highlighted">
           Budget Management
         </h2>
-        <p class="text-sm text-muted">
+        <p class="hidden sm:block text-xs sm:text-sm text-muted">
           Set monthly spending limits, monitor remaining funds, and track when limits were last updated.
         </p>
       </div>
@@ -67,9 +67,11 @@ async function handleDeleteBudget(budget: BudgetSummaryItem) {
         <UButton
           icon="i-lucide-plus"
           color="primary"
+          size="xs"
           @click="openNewBudgetModal"
         >
-          New Budget
+          <span class="hidden sm:inline">New Budget</span>
+          <span class="sm:hidden">New</span>
         </UButton>
       </div>
     </div>
@@ -77,65 +79,65 @@ async function handleDeleteBudget(budget: BudgetSummaryItem) {
     <!-- Quick Stats -->
     <div
       v-if="budgets.length > 0"
-      class="grid grid-cols-1 gap-4 sm:grid-cols-3"
+      class="grid grid-cols-3 gap-2 sm:grid-cols-3 sm:gap-4"
     >
-      <UCard>
+      <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
         <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Total Allocated
+          <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
+            Allocated
           </p>
           <UIcon
             name="i-lucide-wallet"
-            class="size-4 text-muted"
+            class="size-3.5 sm:size-4 text-muted shrink-0"
           />
         </div>
-        <p class="mt-2 text-2xl font-bold text-highlighted">
+        <p class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold text-highlighted truncate">
           {{ formatCurrency(totalBudget) }}
         </p>
-        <p class="mt-1 text-xs text-muted">
+        <p class="hidden sm:block mt-1 text-xs text-muted truncate">
           Across {{ budgets.length }} {{ budgets.length === 1 ? 'category' : 'categories' }}
         </p>
       </UCard>
 
-      <UCard>
+      <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
         <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Spent This Month
+          <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
+            Spent
           </p>
           <UIcon
             name="i-lucide-trending-down"
-            class="size-4 text-muted"
+            class="size-3.5 sm:size-4 text-muted shrink-0"
           />
         </div>
-        <p class="mt-2 text-2xl font-bold text-highlighted">
+        <p class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold text-highlighted truncate">
           {{ formatCurrency(totalSpent) }}
         </p>
-        <p class="mt-1 text-xs text-muted">
-          {{ totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0 }}% of total budget used
+        <p class="hidden sm:block mt-1 text-xs text-muted truncate">
+          {{ totalBudget > 0 ? Math.round((totalSpent / totalBudget) * 100) : 0 }}% used
         </p>
       </UCard>
 
-      <UCard>
+      <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
         <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Total Remaining
+          <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
+            Remaining
           </p>
           <UIcon
             name="i-lucide-piggy-bank"
-            class="size-4 text-muted"
+            class="size-3.5 sm:size-4 text-muted shrink-0"
           />
         </div>
         <p
-          class="mt-2 text-2xl font-bold"
+          class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold truncate"
           :class="totalRemaining < 0 ? 'text-rose-500' : 'text-highlighted'"
         >
           {{ formatCurrency(Math.max(0, totalRemaining)) }}
         </p>
         <p
-          class="mt-1 text-xs font-medium"
+          class="hidden sm:block mt-1 text-xs font-medium truncate"
           :class="totalRemaining < 0 ? 'text-rose-500' : 'text-emerald-500'"
         >
-          {{ totalRemaining < 0 ? 'Over allocated budget' : 'Safe to spend' }}
+          {{ totalRemaining < 0 ? 'Over allocated' : 'Safe to spend' }}
         </p>
       </UCard>
     </div>
@@ -143,26 +145,26 @@ async function handleDeleteBudget(budget: BudgetSummaryItem) {
     <!-- Search / Filter Bar (if multiple budgets) -->
     <div
       v-if="budgets.length > 2"
-      class="flex items-center justify-between gap-4"
+      class="flex items-center justify-between gap-2"
     >
       <div class="w-full max-w-xs">
         <UInput
           v-model="searchQuery"
           icon="i-lucide-search"
           placeholder="Filter budgets..."
-          size="sm"
+          size="xs"
         />
       </div>
 
-      <p class="text-xs text-muted">
-        Showing {{ filteredBudgets.length }} of {{ budgets.length }} budgets
+      <p class="text-[10px] sm:text-xs text-muted shrink-0">
+        {{ filteredBudgets.length }} of {{ budgets.length }} budgets
       </p>
     </div>
 
     <!-- Skeleton loading when loading -->
     <div
       v-if="isLoading"
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3"
+      class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4"
     >
       <UCard
         v-for="i in 3"
@@ -243,7 +245,7 @@ async function handleDeleteBudget(budget: BudgetSummaryItem) {
     <!-- Budgets Grid -->
     <div
       v-else
-      class="grid grid-cols-1 gap-5 sm:grid-cols-2 lg:grid-cols-3"
+      class="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-3 sm:gap-4"
     >
       <BudgetCard
         v-for="b in filteredBudgets"

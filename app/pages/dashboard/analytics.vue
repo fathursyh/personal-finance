@@ -211,14 +211,14 @@ function getPaymentMethodIcon(method: string) {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-3.5 sm:space-y-5 pb-16 sm:pb-0">
     <!-- Header -->
-    <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+    <div class="flex items-center justify-between gap-2">
       <div>
-        <h2 class="text-2xl font-bold tracking-tight text-highlighted">
+        <h2 class="text-lg sm:text-2xl font-bold tracking-tight text-highlighted">
           Financial Analytics
         </h2>
-        <p class="text-sm text-muted">
+        <p class="hidden sm:block text-xs sm:text-sm text-muted">
           Visual spending distribution, budget health analysis, and payment method breakdown for {{ selectedMonth }}.
         </p>
       </div>
@@ -231,28 +231,29 @@ function getPaymentMethodIcon(method: string) {
     <!-- Skeleton Loading State -->
     <div
       v-if="isLoading"
-      class="space-y-6"
+      class="space-y-4"
     >
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4 sm:gap-3">
         <UCard
           v-for="i in 4"
           :key="i"
+          :ui="{ body: 'p-2.5 sm:p-4' }"
         >
           <div class="flex items-center justify-between">
-            <USkeleton class="h-4 w-24" />
-            <USkeleton class="size-4 rounded-full" />
+            <USkeleton class="h-3 w-16 sm:w-24" />
+            <USkeleton class="size-3.5 sm:size-4 rounded-full" />
           </div>
-          <USkeleton class="mt-2 h-7 w-32" />
+          <USkeleton class="mt-2 h-5 sm:h-7 w-20 sm:w-32" />
         </UCard>
       </div>
 
-      <div class="grid grid-cols-1 gap-6 lg:grid-cols-2">
+      <div class="grid grid-cols-1 gap-3 sm:gap-6 lg:grid-cols-2">
         <UCard
           v-for="i in 2"
           :key="i"
           class="h-64 flex flex-col justify-between"
         >
-          <USkeleton class="h-6 w-40" />
+          <USkeleton class="h-5 w-40" />
           <USkeleton class="h-44 w-full" />
         </UCard>
       </div>
@@ -260,81 +261,81 @@ function getPaymentMethodIcon(method: string) {
 
     <template v-else>
       <!-- Key Metrics Cards -->
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <UCard>
+      <div class="grid grid-cols-2 gap-2 sm:grid-cols-2 lg:grid-cols-4 sm:gap-3">
+        <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted">
+            <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
               Total Spent
             </p>
             <UIcon
               name="i-lucide-trending-down"
-              class="size-4 text-muted"
+              class="size-3.5 sm:size-4 text-muted shrink-0"
             />
           </div>
-          <p class="mt-2 text-2xl font-bold text-highlighted">
+          <p class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold text-highlighted truncate">
             {{ formatCurrency(totalSpent) }}
           </p>
-          <p class="mt-1 text-xs text-muted">
+          <p class="hidden sm:block mt-1 text-xs text-muted truncate">
             {{ overallPercentage }}% of allocated budget
           </p>
         </UCard>
 
-        <UCard>
+        <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted">
+            <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
               Total Budget
             </p>
             <UIcon
               name="i-lucide-wallet"
-              class="size-4 text-muted"
+              class="size-3.5 sm:size-4 text-muted shrink-0"
             />
           </div>
-          <p class="mt-2 text-2xl font-bold text-highlighted">
+          <p class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold text-highlighted truncate">
             {{ formatCurrency(totalBudget) }}
           </p>
-          <p class="mt-1 text-xs text-muted">
+          <p class="hidden sm:block mt-1 text-xs text-muted truncate">
             Across {{ budgets.length }} {{ budgets.length === 1 ? 'category' : 'categories' }}
           </p>
         </UCard>
 
-        <UCard>
+        <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted">
+            <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
               Remaining Pool
             </p>
             <UIcon
               name="i-lucide-piggy-bank"
-              class="size-4 text-muted"
+              class="size-3.5 sm:size-4 text-muted shrink-0"
             />
           </div>
           <p
-            class="mt-2 text-2xl font-bold"
+            class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold truncate"
             :class="totalRemaining < 0 ? 'text-rose-500' : 'text-highlighted'"
           >
             {{ formatCurrency(Math.max(0, totalRemaining)) }}
           </p>
           <p
-            class="mt-1 text-xs font-medium"
+            class="hidden sm:block mt-1 text-xs font-medium truncate"
             :class="totalRemaining < 0 ? 'text-rose-500' : 'text-emerald-500'"
           >
             {{ totalRemaining < 0 ? 'Over budget limit' : 'Under budget' }}
           </p>
         </UCard>
 
-        <UCard>
+        <UCard :ui="{ body: 'p-2.5 sm:p-4' }">
           <div class="flex items-center justify-between">
-            <p class="text-xs font-semibold uppercase tracking-wider text-muted">
+            <p class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted truncate">
               Avg Daily Spend
             </p>
             <UIcon
               name="i-lucide-calendar"
-              class="size-4 text-muted"
+              class="size-3.5 sm:size-4 text-muted shrink-0"
             />
           </div>
-          <p class="mt-2 text-2xl font-bold text-highlighted">
+          <p class="mt-1 sm:mt-2 text-xs sm:text-2xl font-bold text-highlighted truncate">
             {{ formatCurrency(averageDailySpend) }}
           </p>
-          <p class="mt-1 text-xs text-muted">
+          <p class="hidden sm:block mt-1 text-xs text-muted truncate">
             Paced per day this month
           </p>
         </UCard>
@@ -343,12 +344,15 @@ function getPaymentMethodIcon(method: string) {
       <!-- Highlights Section (When transactions exist) -->
       <div
         v-if="totalSpent > 0"
-        class="grid grid-cols-1 gap-4 sm:grid-cols-3"
+        class="grid grid-cols-1 gap-2 sm:grid-cols-3 sm:gap-4"
       >
-        <UCard v-if="topCategory">
-          <div class="flex items-center gap-3">
+        <UCard
+          v-if="topCategory"
+          :ui="{ body: 'p-2.5 sm:p-4' }"
+        >
+          <div class="flex items-center gap-2.5 sm:gap-3">
             <div
-              class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
+              class="flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-primary/10 text-primary"
               :class="{
                 'bg-emerald-500/10 text-emerald-500': topCategory.color === 'emerald',
                 'bg-amber-500/10 text-amber-500': topCategory.color === 'amber',
@@ -359,62 +363,68 @@ function getPaymentMethodIcon(method: string) {
             >
               <UIcon
                 :name="topCategory.icon || 'i-lucide-wallet'"
-                class="size-5"
+                class="size-4 sm:size-5"
               />
             </div>
             <div class="min-w-0">
-              <p class="text-xs text-muted">
+              <p class="text-[10px] sm:text-xs text-muted">
                 Top Expense Category
               </p>
-              <p class="text-base font-bold text-highlighted truncate">
+              <p class="text-xs sm:text-base font-bold text-highlighted truncate">
                 {{ topCategory.name }}
               </p>
-              <p class="text-xs text-muted">
-                {{ formatCurrency(topCategory.spent) }} ({{ topCategory.shareOfTotalSpent }}% of spend)
+              <p class="text-[10px] sm:text-xs text-muted truncate">
+                {{ formatCurrency(topCategory.spent) }} ({{ topCategory.shareOfTotalSpent }}%)
               </p>
             </div>
           </div>
         </UCard>
 
-        <UCard v-if="topPaymentMethod">
-          <div class="flex items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <UCard
+          v-if="topPaymentMethod"
+          :ui="{ body: 'p-2.5 sm:p-4' }"
+        >
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-primary/10 text-primary">
               <UIcon
                 :name="getPaymentMethodIcon(topPaymentMethod.method)"
-                class="size-5"
+                class="size-4 sm:size-5"
               />
             </div>
             <div class="min-w-0">
-              <p class="text-xs text-muted">
+              <p class="text-[10px] sm:text-xs text-muted">
                 Most Used Payment
               </p>
-              <p class="text-base font-bold text-highlighted truncate">
+              <p class="text-xs sm:text-base font-bold text-highlighted truncate">
                 {{ topPaymentMethod.method }}
               </p>
-              <p class="text-xs text-muted">
-                {{ formatCurrency(topPaymentMethod.amount) }} ({{ topPaymentMethod.count }} transactions)
+              <p class="text-[10px] sm:text-xs text-muted truncate">
+                {{ formatCurrency(topPaymentMethod.amount) }} ({{ topPaymentMethod.count }} txs)
               </p>
             </div>
           </div>
         </UCard>
 
-        <UCard v-if="highestTransaction">
-          <div class="flex items-center gap-3">
-            <div class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+        <UCard
+          v-if="highestTransaction"
+          :ui="{ body: 'p-2.5 sm:p-4' }"
+        >
+          <div class="flex items-center gap-2.5 sm:gap-3">
+            <div class="flex size-8 sm:size-10 shrink-0 items-center justify-center rounded-lg sm:rounded-xl bg-primary/10 text-primary">
               <UIcon
                 name="i-lucide-receipt"
-                class="size-5"
+                class="size-4 sm:size-5"
               />
             </div>
             <div class="min-w-0">
-              <p class="text-xs text-muted">
+              <p class="text-[10px] sm:text-xs text-muted">
                 Largest Single Expense
               </p>
-              <p class="text-base font-bold text-highlighted truncate">
+              <p class="text-xs sm:text-base font-bold text-highlighted truncate">
                 {{ highestTransaction.description }}
               </p>
-              <p class="text-xs text-muted">
-                {{ formatCurrency(Number(highestTransaction.amount)) }} on {{ highestTransaction.date }}
+              <p class="text-[10px] sm:text-xs text-muted truncate">
+                {{ formatCurrency(Number(highestTransaction.amount)) }} • {{ highestTransaction.date }}
               </p>
             </div>
           </div>
@@ -452,22 +462,22 @@ function getPaymentMethodIcon(method: string) {
       <!-- Main Analysis Grid -->
       <div
         v-else
-        class="grid grid-cols-1 gap-6 lg:grid-cols-2"
+        class="grid grid-cols-1 gap-3.5 sm:gap-6 lg:grid-cols-2"
       >
         <!-- Panel 1: Category Breakdown & Interactive Charts -->
-        <UCard>
+        <UCard :ui="{ body: 'p-3 sm:p-5' }">
           <template #header>
-            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center justify-between gap-2">
               <div>
-                <h3 class="font-semibold text-highlighted">
-                  Spending by Budget Category
+                <h3 class="font-semibold text-highlighted text-sm sm:text-base">
+                  Spending by Category
                 </h3>
-                <p class="text-xs text-muted">
+                <p class="hidden sm:block text-xs text-muted">
                   Compare how much each budget has spent this month.
                 </p>
               </div>
 
-              <div class="w-36 shrink-0">
+              <div class="w-32 sm:w-36 shrink-0">
                 <USelect
                   v-model="chartType"
                   :items="chartOptions"
@@ -480,16 +490,16 @@ function getPaymentMethodIcon(method: string) {
           <!-- If no active expenses -->
           <div
             v-if="activeCategories.length === 0"
-            class="py-12 text-center"
+            class="py-8 sm:py-12 text-center"
           >
             <UIcon
               name="i-lucide-receipt"
-              class="mx-auto size-8 text-muted mb-2"
+              class="mx-auto size-7 sm:size-8 text-muted mb-2"
             />
-            <p class="text-sm font-medium text-highlighted">
+            <p class="text-xs sm:text-sm font-medium text-highlighted">
               No expenses recorded for {{ selectedMonth }}
             </p>
-            <p class="text-xs text-muted mt-1">
+            <p class="text-[10px] sm:text-xs text-muted mt-1">
               Add transactions under your budgets to visualize spending charts.
             </p>
           </div>
@@ -497,11 +507,11 @@ function getPaymentMethodIcon(method: string) {
           <!-- Chart View: Pie Chart -->
           <div
             v-else-if="chartType === 'pie'"
-            class="space-y-6"
+            class="space-y-4 sm:space-y-6"
           >
             <!-- Donut Chart & Center Metric -->
-            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
-              <div class="relative size-52 shrink-0 flex items-center justify-center">
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-6 py-1">
+              <div class="relative size-44 sm:size-52 shrink-0 flex items-center justify-center">
                 <svg
                   class="size-full -rotate-90"
                   viewBox="0 0 200 200"
@@ -778,44 +788,44 @@ function getPaymentMethodIcon(method: string) {
           </div>
         </UCard>
 
-        <UCard>
+        <UCard :ui="{ body: 'p-3 sm:p-5' }">
           <template #header>
             <div>
-              <h3 class="font-semibold text-highlighted">
+              <h3 class="font-semibold text-highlighted text-sm sm:text-base">
                 Payment Method Breakdown
               </h3>
-              <p class="text-xs text-muted">
+              <p class="hidden sm:block text-xs text-muted">
                 How you paid for expenses this month.
               </p>
             </div>
           </template>
 
-          <div class="space-y-5">
+          <div class="space-y-3 sm:space-y-4">
             <div
               v-for="pm in paymentMethodBreakdown"
               :key="pm.method"
-              class="space-y-1.5"
+              class="space-y-1"
             >
-              <div class="flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2">
+              <div class="flex items-center justify-between text-xs sm:text-sm">
+                <div class="flex items-center gap-1.5 sm:gap-2">
                   <UIcon
                     :name="getPaymentMethodIcon(pm.method)"
-                    class="size-4 text-primary"
+                    class="size-3.5 sm:size-4 text-primary"
                   />
                   <span class="font-medium text-highlighted">{{ pm.method }}</span>
-                  <span class="text-xs text-muted">({{ pm.count }} txs)</span>
+                  <span class="text-[10px] sm:text-xs text-muted">({{ pm.count }} txs)</span>
                 </div>
 
                 <div class="text-right">
                   <span class="font-bold text-highlighted">{{ formatCurrency(pm.amount) }}</span>
-                  <span class="text-xs text-muted"> ({{ pm.share }}%)</span>
+                  <span class="text-[10px] sm:text-xs text-muted"> ({{ pm.share }}%)</span>
                 </div>
               </div>
 
               <UProgress
                 :model-value="pm.share"
                 color="primary"
-                size="sm"
+                size="xs"
               />
             </div>
           </div>
