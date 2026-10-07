@@ -17,6 +17,7 @@ const emit = defineEmits<{
 
 const { budgets } = useBudgets()
 const { createTransaction, updateTransaction, loading } = useTransactions()
+const { formatCurrency } = useFinancialSummary()
 
 const paymentMethods: { label: string, value: PaymentMethod }[] = [
   { label: 'Cash', value: 'Cash' },

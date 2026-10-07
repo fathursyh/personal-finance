@@ -10,9 +10,7 @@ useHead({
   title: 'Budgets - Financial Tracker'
 })
 
-const user = useSupabaseUser()
-const { budgets, loading, fetchBudgets, deleteBudget } = useBudgets()
-const { fetchTransactions } = useTransactions()
+const { budgets, loading, deleteBudget, budgetsLoaded, fetchBudgets } = useBudgets()
 const {
   budgetSummaries,
   totalBudget,
@@ -24,29 +22,8 @@ const {
 const isBudgetModalOpen = ref(false)
 const budgetToEdit = ref<BudgetSummaryItem | null>(null)
 const searchQuery = ref('')
-const isInitialLoading = ref(true)
 
-const isLoading = computed(() => isInitialLoading.value || (loading.value && budgets.value.length === 0))
-
-onMounted(async () => {
-  try {
-    await Promise.all([
-      fetchBudgets(),
-      fetchTransactions()
-    ])
-  } finally {
-    isInitialLoading.value = false
-  }
-})
-
-watch(user, async (newUser) => {
-  if (newUser) {
-    await Promise.all([
-      fetchBudgets(),
-      fetchTransactions()
-    ])
-  }
-})
+const isLoading = computed(() => (!budgetsLoaded.value && budgets.value.length === 0) || loading.value)
 
 const filteredBudgets = computed(() => {
   if (!searchQuery.value.trim()) return budgetSummaries.value

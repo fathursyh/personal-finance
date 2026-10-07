@@ -46,4 +46,3 @@ const { formatCurrency } = useFinancialSummary()
     </div>
   </div>
 </template>
-

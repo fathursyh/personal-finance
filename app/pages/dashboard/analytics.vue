@@ -10,9 +10,8 @@ useHead({
   title: 'Analytics - Financial Tracker'
 })
 
-const user = useSupabaseUser()
-const { budgets, loading: budgetsLoading, fetchBudgets } = useBudgets()
-const { transactions, loading: txsLoading, selectedMonth, fetchTransactions } = useTransactions()
+const { budgets, budgetsLoaded } = useBudgets()
+const { transactions, selectedMonth, transactionsLoaded } = useTransactions()
 const {
   budgetSummaries,
   totalBudget,
@@ -22,27 +21,9 @@ const {
   formatCurrency
 } = useFinancialSummary()
 
-const isInitialLoading = ref(true)
-const isLoading = computed(() => isInitialLoading.value || ((budgetsLoading.value && budgets.value.length === 0) || (txsLoading.value && transactions.value.length === 0)))
-
-onMounted(async () => {
-  try {
-    await Promise.all([
-      fetchBudgets(),
-      fetchTransactions()
-    ])
-  } finally {
-    isInitialLoading.value = false
-  }
-})
-
-watch(user, async (newUser) => {
-  if (newUser) {
-    await Promise.all([
-      fetchBudgets(),
-      fetchTransactions()
-    ])
-  }
+const isLoading = computed(() => {
+  return (!budgetsLoaded.value && budgets.value.length === 0)
+    || (!transactionsLoaded.value && transactions.value.length === 0)
 })
 
 const averageDailySpend = computed(() => {

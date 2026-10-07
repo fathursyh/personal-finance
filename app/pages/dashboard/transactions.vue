@@ -11,23 +11,22 @@ useHead({
   title: 'Transactions - Financial Tracker'
 })
 
-const user = useSupabaseUser()
-const { budgets, fetchBudgets } = useBudgets()
+const { budgets, fetchBudgets, budgetsLoaded: _budgetsLoaded } = useBudgets()
 const {
   transactions,
   loading: txsLoading,
   selectedMonth,
   fetchTransactions,
-  deleteTransaction
+  deleteTransaction,
+  transactionsLoaded
 } = useTransactions()
 
 const isTransactionModalOpen = ref(false)
 const isBudgetModalOpen = ref(false)
 const transactionToEdit = ref<TransactionWithBudget | null>(null)
 const defaultBudgetId = ref<string | null>(null)
-const isInitialLoading = ref(true)
 
-const isLoading = computed(() => isInitialLoading.value || (txsLoading.value && transactions.value.length === 0))
+const isLoading = computed(() => (!transactionsLoaded.value && transactions.value.length === 0) || txsLoading.value)
 
 // Filters
 const route = useRoute()
@@ -42,26 +41,6 @@ watch(() => route.query.budget, (newBudgetId) => {
     selectedBudgetId.value = newBudgetId
   } else if (!newBudgetId) {
     selectedBudgetId.value = 'all'
-  }
-})
-
-onMounted(async () => {
-  try {
-    await Promise.all([
-      fetchBudgets(),
-      fetchTransactions()
-    ])
-  } finally {
-    isInitialLoading.value = false
-  }
-})
-
-watch(user, async (newUser) => {
-  if (newUser) {
-    await Promise.all([
-      fetchBudgets(),
-      fetchTransactions()
-    ])
   }
 })
 
@@ -172,6 +151,13 @@ async function handleDeleteTransaction(tx: TransactionWithBudget) {
   if (confirm(`Are you sure you want to delete "${tx.description}"?`)) {
     await deleteTransaction(tx.id)
   }
+}
+
+async function refreshAllData() {
+  await Promise.all([
+    fetchBudgets(),
+    fetchTransactions()
+  ])
 }
 
 function handleOpenCreateBudgetFromTx() {
@@ -378,13 +364,13 @@ function handleOpenCreateBudgetFromTx() {
       v-model="isTransactionModalOpen"
       :transaction-to-edit="transactionToEdit"
       :default-budget-id="defaultBudgetId"
-      @saved="fetchTransactions"
+      @saved="refreshAllData"
       @open-create-budget="handleOpenCreateBudgetFromTx"
     />
 
     <BudgetModal
       v-model="isBudgetModalOpen"
-      @saved="fetchBudgets"
+      @saved="refreshAllData"
     />
   </div>
 </template>

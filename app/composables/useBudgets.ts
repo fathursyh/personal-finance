@@ -6,9 +6,15 @@ export function useBudgets() {
   const toast = useToast()
 
   const budgets = useState<Budget[]>('app-budgets', () => [])
+  const budgetsLoaded = useState<boolean>('app-budgets-loaded', () => false)
   const loading = useState<boolean>('app-budgets-loading', () => false)
 
-  async function fetchBudgets() {
+  async function fetchBudgets(force = false) {
+    // If already cached and force is false, return cached data immediately
+    if (budgetsLoaded.value && !force) {
+      return budgets.value
+    }
+
     loading.value = true
     try {
       let activeUser = user.value
@@ -21,6 +27,7 @@ export function useBudgets() {
 
       if (!activeUser) {
         budgets.value = []
+        budgetsLoaded.value = false
         return
       }
 
@@ -31,6 +38,8 @@ export function useBudgets() {
 
       if (error) throw error
       budgets.value = (data as Budget[]) || []
+      budgetsLoaded.value = true
+      return budgets.value
     } catch (err: unknown) {
       const error = err as { message?: string }
       toast.add({
@@ -40,6 +49,19 @@ export function useBudgets() {
       })
     } finally {
       loading.value = false
+    }
+  }
+
+  function invalidateCache() {
+    budgetsLoaded.value = false
+  }
+
+  async function refreshTransactions() {
+    try {
+      const { fetchTransactions } = useTransactions()
+      await fetchTransactions(undefined, true)
+    } catch (err) {
+      console.error('Failed to refresh transactions after budget update', err)
     }
   }
 
@@ -63,13 +85,19 @@ export function useBudgets() {
       if (error) throw error
 
       const created = data as Budget
-      budgets.value = [...budgets.value, created]
 
       toast.add({
         title: 'Budget created',
         description: `Budget "${created.name}" created successfully.`,
         color: 'success'
       })
+
+      // Invalidate cache and force refetch from database
+      invalidateCache()
+      await Promise.all([
+        fetchBudgets(true),
+        refreshTransactions()
+      ])
 
       return created
     } catch (err: unknown) {
@@ -98,13 +126,19 @@ export function useBudgets() {
       if (error) throw error
 
       const updated = data as Budget
-      budgets.value = budgets.value.map(b => (b.id === id ? updated : b))
 
       toast.add({
         title: 'Budget updated',
         description: `Budget "${updated.name}" updated successfully.`,
         color: 'success'
       })
+
+      // Invalidate cache and force refetch from database
+      invalidateCache()
+      await Promise.all([
+        fetchBudgets(true),
+        refreshTransactions()
+      ])
 
       return updated
     } catch (err: unknown) {
@@ -130,13 +164,18 @@ export function useBudgets() {
 
       if (error) throw error
 
-      budgets.value = budgets.value.filter(b => b.id !== id)
-
       toast.add({
         title: 'Budget deleted',
         description: 'Budget removed successfully.',
         color: 'info'
       })
+
+      // Invalidate cache and force refetch from database
+      invalidateCache()
+      await Promise.all([
+        fetchBudgets(true),
+        refreshTransactions()
+      ])
     } catch (err: unknown) {
       const error = err as { message?: string }
       toast.add({
@@ -152,8 +191,10 @@ export function useBudgets() {
 
   return {
     budgets,
+    budgetsLoaded,
     loading,
     fetchBudgets,
+    invalidateCache,
     createBudget,
     updateBudget,
     deleteBudget

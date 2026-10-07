@@ -23,6 +23,25 @@ const userEmail = computed(() => {
   return user.value?.email || ''
 })
 
+const { fetchBudgets } = useBudgets()
+const { fetchTransactions } = useTransactions()
+
+onMounted(async () => {
+  await Promise.all([
+    fetchBudgets(),
+    fetchTransactions()
+  ])
+})
+
+watch(user, async (newUser, oldUser) => {
+  if (newUser && newUser.id !== oldUser?.id) {
+    await Promise.all([
+      fetchBudgets(true),
+      fetchTransactions(undefined, true)
+    ])
+  }
+})
+
 async function handleLogout() {
   await supabase.auth.signOut()
   toast.add({
