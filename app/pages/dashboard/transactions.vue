@@ -1,5 +1,6 @@
 <script setup lang="ts">
-import type { PaymentMethod, TransactionWithBudget } from '~/types/database.types'
+import type { TransactionWithBudget } from '~/types/database.types'
+import { groupTransactionsByDate } from '~/utils/timelineGrouping'
 
 definePageMeta({
   layout: 'dashboard',
@@ -19,11 +20,6 @@ const {
   fetchTransactions,
   deleteTransaction
 } = useTransactions()
-const {
-  formatCurrency,
-  totalSpent,
-  totalIncome
-} = useFinancialSummary()
 
 const isTransactionModalOpen = ref(false)
 const isBudgetModalOpen = ref(false)
@@ -132,6 +128,28 @@ const hasActiveFilters = computed(() => {
     || selectedType.value !== 'all'
 })
 
+// Daily timeline grouping
+const groupedTransactions = computed(() => {
+  return groupTransactionsByDate(filteredTransactions.value)
+})
+
+// Monthly timeline aggregations
+const monthlyIncome = computed(() => {
+  return filteredTransactions.value
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+})
+
+const monthlyExpense = computed(() => {
+  return filteredTransactions.value
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+})
+
+const monthlyTotal = computed(() => {
+  return monthlyIncome.value - monthlyExpense.value
+})
+
 function resetFilters() {
   searchQuery.value = ''
   selectedBudgetId.value = 'all'
@@ -160,28 +178,10 @@ function handleOpenCreateBudgetFromTx() {
   isTransactionModalOpen.value = false
   isBudgetModalOpen.value = true
 }
-
-function getPaymentIcon(method: PaymentMethod) {
-  switch (method) {
-    case 'Cash':
-      return 'i-lucide-banknote'
-    case 'Debit Card':
-    case 'Credit Card':
-      return 'i-lucide-credit-card'
-    case 'Bank Transfer':
-      return 'i-lucide-landmark'
-    case 'E-Wallet':
-      return 'i-lucide-smartphone'
-    case 'QRIS':
-      return 'i-lucide-qr-code'
-    default:
-      return 'i-lucide-credit-card'
-  }
-}
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 pb-20">
     <!-- Header -->
     <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <div>
@@ -189,7 +189,7 @@ function getPaymentIcon(method: PaymentMethod) {
           Transaction Ledger
         </h2>
         <p class="text-sm text-muted">
-          Record purchases, view category breakdowns, and filter by payment method.
+          Daily chronological timeline categorized by budget buckets.
         </p>
       </div>
 
@@ -206,83 +206,12 @@ function getPaymentIcon(method: PaymentMethod) {
       </div>
     </div>
 
-    <!-- Quick Stats for the Active Month -->
-    <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Total Spent
-          </p>
-          <UIcon
-            name="i-lucide-trending-down"
-            class="size-4 text-rose-500"
-          />
-        </div>
-        <p class="mt-2 text-2xl font-bold text-highlighted">
-          {{ formatCurrency(totalSpent) }}
-        </p>
-        <p class="mt-1 text-xs text-muted">
-          Expenses for {{ selectedMonth }}
-        </p>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Total Income
-          </p>
-          <UIcon
-            name="i-lucide-trending-up"
-            class="size-4 text-emerald-500"
-          />
-        </div>
-        <p class="mt-2 text-2xl font-bold text-emerald-500">
-          {{ formatCurrency(totalIncome) }}
-        </p>
-        <p class="mt-1 text-xs text-muted">
-          Income recorded this month
-        </p>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Net Cashflow
-          </p>
-          <UIcon
-            name="i-lucide-scale"
-            class="size-4 text-muted"
-          />
-        </div>
-        <p
-          class="mt-2 text-2xl font-bold"
-          :class="totalIncome - totalSpent >= 0 ? 'text-emerald-500' : 'text-rose-500'"
-        >
-          {{ formatCurrency(totalIncome - totalSpent) }}
-        </p>
-        <p class="mt-1 text-xs text-muted">
-          {{ totalIncome - totalSpent >= 0 ? 'Net positive flow' : 'Net negative flow' }}
-        </p>
-      </UCard>
-
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-xs font-semibold uppercase tracking-wider text-muted">
-            Records
-          </p>
-          <UIcon
-            name="i-lucide-receipt"
-            class="size-4 text-muted"
-          />
-        </div>
-        <p class="mt-2 text-2xl font-bold text-highlighted">
-          {{ transactions.length }}
-        </p>
-        <p class="mt-1 text-xs text-muted">
-          {{ filteredTransactions.length }} matching filters
-        </p>
-      </UCard>
-    </div>
+    <!-- Monthly Summary Bar (Income, Exp., Total) -->
+    <TransactionDailyHeader
+      :income="monthlyIncome"
+      :expense="monthlyExpense"
+      :total="monthlyTotal"
+    />
 
     <!-- Filters & Search Toolbar -->
     <UCard class="p-1">
@@ -374,7 +303,7 @@ function getPaymentIcon(method: PaymentMethod) {
         No transactions logged for {{ selectedMonth }}
       </h3>
       <p class="mx-auto mt-2 max-w-md text-sm text-muted">
-        Record your expenses or income to track where your money is going and see your remaining budget balances.
+        Record your expenses or income to track where your money is going and see your daily timeline.
       </p>
       <div class="mt-6 flex justify-center gap-3">
         <UButton
@@ -414,115 +343,35 @@ function getPaymentIcon(method: PaymentMethod) {
       </UButton>
     </div>
 
-    <!-- Case 3: Ledger List -->
+    <!-- Case 3: Daily Timeline Ledger -->
     <UCard
       v-else
-      class="overflow-hidden"
+      class="overflow-hidden p-0"
     >
-      <div class="divide-y divide-default">
-        <div
-          v-for="tx in filteredTransactions"
-          :key="tx.id"
-          class="flex items-center justify-between p-4 transition-colors hover:bg-elevated/50"
-        >
-          <!-- Left side: Category Icon, Description, Date, Tags -->
-          <div class="flex items-center gap-3 min-w-0">
-            <div
-              class="flex size-10 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary"
-              :class="{
-                'bg-emerald-500/10 text-emerald-500': tx.budget?.color === 'emerald',
-                'bg-amber-500/10 text-amber-500': tx.budget?.color === 'amber',
-                'bg-rose-500/10 text-rose-500': tx.budget?.color === 'rose',
-                'bg-violet-500/10 text-violet-500': tx.budget?.color === 'violet',
-                'bg-cyan-500/10 text-cyan-500': tx.budget?.color === 'cyan'
-              }"
-            >
-              <UIcon
-                :name="tx.budget?.icon || 'i-lucide-receipt'"
-                class="size-5"
-              />
-            </div>
-
-            <div class="min-w-0 truncate">
-              <div class="flex items-center gap-2">
-                <p class="text-sm font-semibold text-highlighted truncate">
-                  {{ tx.description }}
-                </p>
-                <UBadge
-                  v-if="tx.type === 'income'"
-                  color="success"
-                  variant="subtle"
-                  size="xs"
-                >
-                  Income
-                </UBadge>
-              </div>
-
-              <div class="mt-0.5 flex flex-wrap items-center gap-2 text-xs text-muted">
-                <span>{{ tx.date }}</span>
-                <span>•</span>
-                <span class="inline-flex items-center gap-1">
-                  <UIcon
-                    :name="getPaymentIcon(tx.payment_method)"
-                    class="size-3"
-                  />
-                  {{ tx.payment_method }}
-                </span>
-
-                <template v-if="tx.budget">
-                  <span>•</span>
-                  <span class="inline-flex items-center gap-1 font-medium text-highlighted">
-                    <span
-                      class="size-1.5 rounded-full"
-                      :class="{
-                        'bg-emerald-500': tx.budget.color === 'emerald',
-                        'bg-amber-500': tx.budget.color === 'amber',
-                        'bg-rose-500': tx.budget.color === 'rose',
-                        'bg-violet-500': tx.budget.color === 'violet',
-                        'bg-cyan-500': tx.budget.color === 'cyan',
-                        'bg-primary': !tx.budget.color || tx.budget.color === 'primary'
-                      }"
-                    />
-                    {{ tx.budget.name }}
-                  </span>
-                </template>
-                <template v-else>
-                  <span>•</span>
-                  <span class="text-muted italic">Unbudgeted</span>
-                </template>
-              </div>
-            </div>
-          </div>
-
-          <!-- Right side: Amount & Action Dropdown -->
-          <div class="flex items-center gap-3">
-            <span
-              class="text-base font-bold whitespace-nowrap"
-              :class="tx.type === 'income' ? 'text-emerald-500' : 'text-highlighted'"
-            >
-              {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(Number(tx.amount)) }}
-            </span>
-
-            <UDropdownMenu
-              :items="[
-                [
-                  { label: 'Edit', icon: 'i-lucide-pencil', onSelect: () => handleEditTransaction(tx) },
-                  { label: 'Delete', icon: 'i-lucide-trash-2', color: 'error', onSelect: () => handleDeleteTransaction(tx) }
-                ]
-              ]"
-            >
-              <UButton
-                icon="i-lucide-more-vertical"
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                aria-label="Actions"
-              />
-            </UDropdownMenu>
-          </div>
-        </div>
-      </div>
+      <TransactionDailyGroup
+        v-for="group in groupedTransactions"
+        :key="group.date"
+        :group="group"
+        @edit="handleEditTransaction"
+        @delete="handleDeleteTransaction"
+      />
     </UCard>
+
+    <!-- Floating Action Button (FAB) -->
+    <div class="fixed bottom-6 right-6 sm:bottom-8 sm:right-8 z-30">
+      <button
+        type="button"
+        class="flex size-14 items-center justify-center rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white shadow-xl hover:shadow-2xl hover:scale-105 transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-rose-500/30 cursor-pointer"
+        title="Add Transaction"
+        aria-label="Add Transaction"
+        @click="openNewTransactionModal()"
+      >
+        <UIcon
+          name="i-lucide-plus"
+          class="size-7 stroke-[2.5]"
+        />
+      </button>
+    </div>
 
     <!-- Modals -->
     <TransactionModal
