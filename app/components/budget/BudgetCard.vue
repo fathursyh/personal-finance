@@ -3,11 +3,13 @@ import type { BudgetSummaryItem } from '~/composables/useFinancialSummary'
 
 const props = defineProps<{
   budget: BudgetSummaryItem
+  selected?: boolean
 }>()
 
 const emit = defineEmits<{
   edit: [budget: BudgetSummaryItem]
   delete: [budget: BudgetSummaryItem]
+  select: [budget: BudgetSummaryItem]
 }>()
 
 const { formatCurrency } = useFinancialSummary()
@@ -44,7 +46,13 @@ const menuItems = [
 </script>
 
 <template>
-  <UCard class="relative overflow-hidden transition-shadow hover:shadow-md">
+  <UCard
+    class="relative overflow-hidden cursor-pointer select-none transition-all hover:shadow-md hover:border-primary/50"
+    :class="{
+      'ring-2 ring-primary border-primary bg-primary/5 dark:bg-primary/10 shadow-sm': selected
+    }"
+    @click="emit('select', budget)"
+  >
     <div class="flex items-start justify-between gap-3">
       <div class="flex items-center gap-3 min-w-0">
         <div
@@ -77,7 +85,10 @@ const menuItems = [
         </div>
       </div>
 
-      <div class="flex items-center gap-1">
+      <div
+        class="flex items-center gap-1"
+        @click.stop
+      >
         <UBadge
           :color="badgeColor"
           variant="subtle"

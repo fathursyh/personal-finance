@@ -34,10 +34,20 @@ const isInitialLoading = ref(true)
 const isLoading = computed(() => isInitialLoading.value || (txsLoading.value && transactions.value.length === 0))
 
 // Filters
+const route = useRoute()
+const initialBudgetId = typeof route.query.budget === 'string' && route.query.budget ? route.query.budget : 'all'
+const selectedBudgetId = ref<string>(initialBudgetId)
 const searchQuery = ref('')
-const selectedBudgetId = ref<string>('all')
 const selectedPaymentMethod = ref<string>('all')
 const selectedType = ref<string>('all')
+
+watch(() => route.query.budget, (newBudgetId) => {
+  if (typeof newBudgetId === 'string' && newBudgetId) {
+    selectedBudgetId.value = newBudgetId
+  } else if (!newBudgetId) {
+    selectedBudgetId.value = 'all'
+  }
+})
 
 onMounted(async () => {
   try {

@@ -18,6 +18,7 @@ const {
   budgetSummaries,
   totalBudget,
   totalSpent,
+  totalIncome,
   totalRemaining,
   overallPercentage,
   formatCurrency
@@ -29,6 +30,18 @@ const budgetToEdit = ref<BudgetSummaryItem | null>(null)
 const transactionToEdit = ref<TransactionWithBudget | null>(null)
 const defaultBudgetId = ref<string | null>(null)
 const isInitialLoading = ref(true)
+
+const selectedBudgetId = ref<string | null>(null)
+
+const selectedBudget = computed(() => {
+  if (!selectedBudgetId.value) return null
+  return budgetSummaries.value.find(b => b.id === selectedBudgetId.value) || null
+})
+
+const selectedBudgetTransactions = computed(() => {
+  if (!selectedBudgetId.value) return []
+  return transactions.value.filter(t => t.budget_id === selectedBudgetId.value)
+})
 
 const isLoading = computed(() => isInitialLoading.value || ((budgetsLoading.value && budgets.value.length === 0) || (txsLoading.value && transactions.value.length === 0)))
 
@@ -52,6 +65,20 @@ watch(user, async (newUser) => {
   }
 })
 
+watch(budgets, (newBudgets) => {
+  if (selectedBudgetId.value && !newBudgets.some(b => b.id === selectedBudgetId.value)) {
+    selectedBudgetId.value = null
+  }
+})
+
+function toggleSelectBudget(budget: BudgetSummaryItem) {
+  if (selectedBudgetId.value === budget.id) {
+    selectedBudgetId.value = null
+  } else {
+    selectedBudgetId.value = budget.id
+  }
+}
+
 function openNewBudgetModal() {
   budgetToEdit.value = null
   isBudgetModalOpen.value = true
@@ -64,6 +91,9 @@ function handleEditBudget(budget: BudgetSummaryItem) {
 
 async function handleDeleteBudget(budget: BudgetSummaryItem) {
   if (confirm(`Are you sure you want to delete the budget "${budget.name}"? Transactions linked to it will remain but become unassigned.`)) {
+    if (selectedBudgetId.value === budget.id) {
+      selectedBudgetId.value = null
+    }
     await deleteBudget(budget.id)
   }
 }
@@ -89,10 +119,6 @@ function handleOpenCreateBudgetFromTx() {
   isTransactionModalOpen.value = false
   openNewBudgetModal()
 }
-
-const recentTransactions = computed(() => {
-  return transactions.value.slice(0, 5)
-})
 
 function getPaymentIcon(method: string) {
   switch (method) {
@@ -133,7 +159,7 @@ function getPaymentIcon(method: string) {
           v-if="budgets.length > 0"
           icon="i-lucide-plus"
           color="primary"
-          @click="openNewTransactionModal()"
+          @click="openNewTransactionModal(selectedBudgetId || undefined)"
         >
           Add Transaction
         </UButton>
@@ -219,276 +245,346 @@ function getPaymentIcon(method: string) {
       </div>
     </div>
 
-    <!-- Stats Grid (When budgets exist) -->
-    <div
-      v-else
-      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4"
-    >
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-muted">
-            Total Monthly Budget
-          </p>
-          <UIcon
-            name="i-lucide-wallet"
-            class="size-5 text-muted"
-          />
-        </div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <p class="text-2xl font-semibold text-highlighted">
-            {{ formatCurrency(totalBudget) }}
-          </p>
-          <span class="text-xs font-medium text-muted">
-            {{ budgets.length }} {{ budgets.length === 1 ? 'category' : 'categories' }}
-          </span>
-        </div>
-      </UCard>
+    <!-- Stats Grid & Main Content (When budgets exist) -->
+    <template v-else>
+      <!-- Stats Grid: 1. Expense This Month | 2. Income This Month | 3. Remaining to Spend | 4. Total Budget -->
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <!-- 1. Expense This Month -->
+        <UCard>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-muted">
+              Expense This Month
+            </p>
+            <UIcon
+              name="i-lucide-trending-down"
+              class="size-5 text-rose-500"
+            />
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <p class="text-2xl font-semibold text-highlighted">
+              {{ formatCurrency(totalSpent) }}
+            </p>
+            <span
+              class="text-xs font-medium"
+              :class="overallPercentage >= 100 ? 'text-rose-500' : 'text-primary'"
+            >
+              {{ overallPercentage }}% of budget
+            </span>
+          </div>
+        </UCard>
 
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-muted">
-            Spent This Month
-          </p>
-          <UIcon
-            name="i-lucide-trending-down"
-            class="size-5 text-muted"
-          />
-        </div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <p class="text-2xl font-semibold text-highlighted">
-            {{ formatCurrency(totalSpent) }}
-          </p>
-          <span
-            class="text-xs font-medium"
-            :class="overallPercentage >= 100 ? 'text-rose-500' : 'text-primary'"
-          >
-            {{ overallPercentage }}% used
-          </span>
-        </div>
-      </UCard>
+        <!-- 2. Income This Month -->
+        <UCard>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-muted">
+              Income This Month
+            </p>
+            <UIcon
+              name="i-lucide-trending-up"
+              class="size-5 text-emerald-500"
+            />
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <p class="text-2xl font-semibold text-emerald-500">
+              {{ formatCurrency(totalIncome) }}
+            </p>
+            <span class="text-xs font-medium text-muted">
+              Total inflow
+            </span>
+          </div>
+        </UCard>
 
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-muted">
-            Remaining to Spend
-          </p>
-          <UIcon
-            name="i-lucide-piggy-bank"
-            class="size-5 text-muted"
-          />
-        </div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <p
-            class="text-2xl font-semibold"
-            :class="totalRemaining < 0 ? 'text-rose-500' : 'text-highlighted'"
-          >
-            {{ formatCurrency(Math.max(0, totalRemaining)) }}
-          </p>
-          <span
-            class="text-xs font-medium"
-            :class="totalRemaining < 0 ? 'text-rose-500' : 'text-emerald-500'"
-          >
-            {{ totalRemaining < 0 ? 'Over budget' : 'Safe to spend' }}
-          </span>
-        </div>
-      </UCard>
+        <!-- 3. Remaining to Spend -->
+        <UCard>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-muted">
+              Remaining to Spend
+            </p>
+            <UIcon
+              name="i-lucide-piggy-bank"
+              class="size-5 text-muted"
+            />
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <p
+              class="text-2xl font-semibold"
+              :class="totalRemaining < 0 ? 'text-rose-500' : 'text-highlighted'"
+            >
+              {{ formatCurrency(Math.max(0, totalRemaining)) }}
+            </p>
+            <span
+              class="text-xs font-medium"
+              :class="totalRemaining < 0 ? 'text-rose-500' : 'text-emerald-500'"
+            >
+              {{ totalRemaining < 0 ? 'Over budget' : 'Safe to spend' }}
+            </span>
+          </div>
+        </UCard>
 
-      <UCard>
-        <div class="flex items-center justify-between">
-          <p class="text-sm font-medium text-muted">
-            Budget Health
-          </p>
-          <UIcon
-            name="i-lucide-shield-check"
-            class="size-5 text-muted"
-          />
-        </div>
-        <div class="mt-2 flex items-baseline justify-between">
-          <p class="text-2xl font-semibold text-highlighted">
-            {{ 100 - overallPercentage }}%
-          </p>
-          <span class="text-xs font-medium text-muted">
-            Remaining pool
-          </span>
-        </div>
-      </UCard>
-    </div>
-
-    <!-- Budgets Section -->
-    <div
-      v-if="budgets.length > 0"
-      class="space-y-4"
-    >
-      <div class="flex items-center justify-between">
-        <div>
-          <h3 class="text-lg font-bold text-highlighted">
-            Budgets
-          </h3>
-          <p class="text-xs text-muted">
-            Track how much is left from each allocated spending limit.
-          </p>
-        </div>
-
-        <div class="flex items-center gap-2">
-          <UButton
-            variant="ghost"
-            color="neutral"
-            size="xs"
-            to="/dashboard/budgets"
-            trailing-icon="i-lucide-arrow-right"
-          >
-            Manage budgets
-          </UButton>
-          <UButton
-            size="xs"
-            color="primary"
-            icon="i-lucide-plus"
-            @click="openNewBudgetModal"
-          >
-            New Budget
-          </UButton>
-        </div>
+        <!-- 4. Total Budget -->
+        <UCard>
+          <div class="flex items-center justify-between">
+            <p class="text-sm font-medium text-muted">
+              Total Budget
+            </p>
+            <UIcon
+              name="i-lucide-wallet"
+              class="size-5 text-muted"
+            />
+          </div>
+          <div class="mt-2 flex items-baseline justify-between">
+            <p class="text-2xl font-semibold text-highlighted">
+              {{ formatCurrency(totalBudget) }}
+            </p>
+            <span class="text-xs font-medium text-muted">
+              {{ budgets.length }} {{ budgets.length === 1 ? 'category' : 'categories' }}
+            </span>
+          </div>
+        </UCard>
       </div>
 
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        <BudgetCard
-          v-for="b in budgetSummaries"
-          :key="b.id"
-          :budget="b"
-          @edit="handleEditBudget"
-          @delete="handleDeleteBudget"
-        />
-      </div>
-    </div>
-
-    <!-- Recent Transactions Section -->
-    <UCard v-if="budgets.length > 0">
-      <template #header>
+      <!-- Budgets Section -->
+      <div class="space-y-4">
         <div class="flex items-center justify-between">
           <div>
-            <h3 class="font-semibold text-highlighted">
-              Recent Transactions
+            <h3 class="text-lg font-bold text-highlighted">
+              Budgets
             </h3>
             <p class="text-xs text-muted">
-              Recent purchases and expenses for {{ selectedMonth }}.
+              Click a budget card below to inspect its transactions and details.
             </p>
           </div>
+
           <div class="flex items-center gap-2">
             <UButton
-              to="/dashboard/transactions"
               variant="ghost"
               color="neutral"
               size="xs"
+              to="/dashboard/budgets"
               trailing-icon="i-lucide-arrow-right"
             >
-              View all
+              Manage budgets
+            </UButton>
+            <UButton
+              size="xs"
+              color="primary"
+              icon="i-lucide-plus"
+              @click="openNewBudgetModal"
+            >
+              New Budget
             </UButton>
           </div>
         </div>
-      </template>
 
-      <!-- Empty state for transactions -->
-      <div
-        v-if="recentTransactions.length === 0"
-        class="py-8 text-center"
-      >
-        <UIcon
-          name="i-lucide-receipt"
-          class="mx-auto size-8 text-muted mb-2"
-        />
-        <p class="text-sm font-medium text-highlighted">
-          No transactions logged for this month yet.
-        </p>
-        <p class="text-xs text-muted mt-1">
-          Click "Add Transaction" to log an expense under one of your budgets.
-        </p>
-        <UButton
-          size="sm"
-          color="primary"
-          icon="i-lucide-plus"
-          class="mt-4"
-          @click="openNewTransactionModal()"
-        >
-          Record Transaction
-        </UButton>
-      </div>
-
-      <!-- Transaction List -->
-      <div
-        v-else
-        class="divide-y divide-default"
-      >
-        <div
-          v-for="tx in recentTransactions"
-          :key="tx.id"
-          class="flex items-center justify-between py-3 hover:bg-elevated/50 px-2 rounded-lg transition-colors"
-        >
-          <div class="flex items-center gap-3 min-w-0">
-            <div
-              class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
-              :class="{
-                'bg-emerald-500/10 text-emerald-500': tx.budget?.color === 'emerald',
-                'bg-amber-500/10 text-amber-500': tx.budget?.color === 'amber',
-                'bg-rose-500/10 text-rose-500': tx.budget?.color === 'rose',
-                'bg-violet-500/10 text-violet-500': tx.budget?.color === 'violet',
-                'bg-cyan-500/10 text-cyan-500': tx.budget?.color === 'cyan'
-              }"
-            >
-              <UIcon
-                :name="tx.budget?.icon || 'i-lucide-receipt'"
-                class="size-5"
-              />
-            </div>
-            <div class="min-w-0 truncate">
-              <p class="text-sm font-medium text-highlighted truncate">
-                {{ tx.description }}
-              </p>
-              <p class="text-xs text-muted flex items-center gap-2">
-                <span>{{ tx.date }}</span>
-                <span>•</span>
-                <span class="inline-flex items-center gap-1">
-                  <UIcon
-                    :name="getPaymentIcon(tx.payment_method)"
-                    class="size-3"
-                  />
-                  {{ tx.payment_method }}
-                </span>
-                <template v-if="tx.budget">
-                  <span>•</span>
-                  <span class="font-medium text-highlighted truncate">{{ tx.budget.name }}</span>
-                </template>
-              </p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-3">
-            <span
-              class="text-sm font-semibold whitespace-nowrap"
-              :class="tx.type === 'income' ? 'text-emerald-500' : 'text-highlighted'"
-            >
-              {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(Number(tx.amount)) }}
-            </span>
-
-            <UDropdownMenu
-              :items="[
-                [
-                  { label: 'Edit', icon: 'i-lucide-pencil', onSelect: () => handleEditTransaction(tx) },
-                  { label: 'Delete', icon: 'i-lucide-trash-2', color: 'error', onSelect: () => handleDeleteTransaction(tx) }
-                ]
-              ]"
-            >
-              <UButton
-                icon="i-lucide-more-vertical"
-                color="neutral"
-                variant="ghost"
-                size="xs"
-                aria-label="Actions"
-              />
-            </UDropdownMenu>
-          </div>
+        <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <BudgetCard
+            v-for="b in budgetSummaries"
+            :key="b.id"
+            :budget="b"
+            :selected="selectedBudgetId === b.id"
+            @select="toggleSelectBudget"
+            @edit="handleEditBudget"
+            @delete="handleDeleteBudget"
+          />
         </div>
       </div>
-    </UCard>
+
+      <!-- Budget Transactions Section -->
+      <!-- Case A: No budget clicked yet -->
+      <UCard
+        v-if="!selectedBudgetId || !selectedBudget"
+        class="border-dashed bg-elevated/20"
+      >
+        <div class="py-8 text-center">
+          <UIcon
+            name="i-lucide-mouse-pointer-click"
+            class="mx-auto size-8 text-muted mb-2"
+          />
+          <p class="text-sm font-medium text-highlighted">
+            Select a budget to view transactions
+          </p>
+          <p class="text-xs text-muted mt-1">
+            Click on any budget card above to see all transactions logged under that category.
+          </p>
+        </div>
+      </UCard>
+
+      <!-- Case B: A budget is selected -->
+      <UCard
+        v-else
+        class="overflow-hidden"
+      >
+        <template #header>
+          <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div
+                class="flex size-7 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                :class="{
+                  'bg-emerald-500/10 text-emerald-500': selectedBudget.color === 'emerald',
+                  'bg-amber-500/10 text-amber-500': selectedBudget.color === 'amber',
+                  'bg-rose-500/10 text-rose-500': selectedBudget.color === 'rose',
+                  'bg-violet-500/10 text-violet-500': selectedBudget.color === 'violet',
+                  'bg-cyan-500/10 text-cyan-500': selectedBudget.color === 'cyan'
+                }"
+              >
+                <UIcon
+                  :name="selectedBudget.icon || 'i-lucide-wallet'"
+                  class="size-4"
+                />
+              </div>
+
+              <div class="min-w-0">
+                <div class="flex items-center gap-2">
+                  <h3 class="font-semibold text-highlighted truncate text-base">
+                    {{ selectedBudget.name }} Transactions
+                  </h3>
+                  <UBadge
+                    size="xs"
+                    color="primary"
+                    variant="subtle"
+                  >
+                    {{ selectedBudgetTransactions.length }}
+                  </UBadge>
+                </div>
+                <p class="text-xs text-muted truncate">
+                  Expenses & income logged for {{ selectedBudget.name }} in {{ selectedMonth }}.
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-2">
+              <UButton
+                :to="`/dashboard/transactions?budget=${selectedBudget.id}`"
+                variant="ghost"
+                color="neutral"
+                size="xs"
+                trailing-icon="i-lucide-arrow-right"
+              >
+                View all in Transactions
+              </UButton>
+
+              <UButton
+                size="xs"
+                color="primary"
+                icon="i-lucide-plus"
+                @click="openNewTransactionModal(selectedBudget.id)"
+              >
+                Add Transaction
+              </UButton>
+
+              <UButton
+                size="xs"
+                variant="ghost"
+                color="neutral"
+                icon="i-lucide-x"
+                title="Deselect budget"
+                aria-label="Deselect budget"
+                @click="selectedBudgetId = null"
+              />
+            </div>
+          </div>
+        </template>
+
+        <!-- Empty state when selected budget has zero transactions this month -->
+        <div
+          v-if="selectedBudgetTransactions.length === 0"
+          class="py-8 text-center"
+        >
+          <UIcon
+            name="i-lucide-receipt"
+            class="mx-auto size-8 text-muted mb-2"
+          />
+          <p class="text-sm font-medium text-highlighted">
+            No transactions for {{ selectedBudget.name }} this month
+          </p>
+          <p class="text-xs text-muted mt-1">
+            You haven't logged any expenses or income under this budget for {{ selectedMonth }} yet.
+          </p>
+          <UButton
+            size="sm"
+            color="primary"
+            icon="i-lucide-plus"
+            class="mt-4"
+            @click="openNewTransactionModal(selectedBudget.id)"
+          >
+            Record First Transaction
+          </UButton>
+        </div>
+
+        <!-- Transaction List for Selected Budget -->
+        <div
+          v-else
+          class="divide-y divide-default"
+        >
+          <div
+            v-for="tx in selectedBudgetTransactions"
+            :key="tx.id"
+            class="flex items-center justify-between py-3 hover:bg-elevated/50 px-2 rounded-lg transition-colors"
+          >
+            <div class="flex items-center gap-3 min-w-0">
+              <div
+                class="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                :class="{
+                  'bg-emerald-500/10 text-emerald-500': selectedBudget.color === 'emerald',
+                  'bg-amber-500/10 text-amber-500': selectedBudget.color === 'amber',
+                  'bg-rose-500/10 text-rose-500': selectedBudget.color === 'rose',
+                  'bg-violet-500/10 text-violet-500': selectedBudget.color === 'violet',
+                  'bg-cyan-500/10 text-cyan-500': selectedBudget.color === 'cyan'
+                }"
+              >
+                <UIcon
+                  :name="selectedBudget.icon || 'i-lucide-receipt'"
+                  class="size-5"
+                />
+              </div>
+
+              <div class="min-w-0 truncate">
+                <p class="text-sm font-medium text-highlighted truncate">
+                  {{ tx.description }}
+                </p>
+                <p class="text-xs text-muted flex items-center gap-2">
+                  <span>{{ tx.date }}</span>
+                  <span>•</span>
+                  <span class="inline-flex items-center gap-1">
+                    <UIcon
+                      :name="getPaymentIcon(tx.payment_method)"
+                      class="size-3"
+                    />
+                    {{ tx.payment_method }}
+                  </span>
+                </p>
+              </div>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span
+                class="text-sm font-semibold whitespace-nowrap"
+                :class="tx.type === 'income' ? 'text-emerald-500' : 'text-highlighted'"
+              >
+                {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(Number(tx.amount)) }}
+              </span>
+
+              <UDropdownMenu
+                :items="[
+                  [
+                    { label: 'Edit', icon: 'i-lucide-pencil', onSelect: () => handleEditTransaction(tx) },
+                    { label: 'Delete', icon: 'i-lucide-trash-2', color: 'error', onSelect: () => handleDeleteTransaction(tx) }
+                  ]
+                ]"
+              >
+                <UButton
+                  icon="i-lucide-more-vertical"
+                  color="neutral"
+                  variant="ghost"
+                  size="xs"
+                  aria-label="Actions"
+                />
+              </UDropdownMenu>
+            </div>
+          </div>
+        </div>
+      </UCard>
+    </template>
 
     <!-- Modals -->
     <BudgetModal

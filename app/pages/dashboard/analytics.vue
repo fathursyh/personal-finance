@@ -58,6 +58,14 @@ const averageDailySpend = computed(() => {
   return totalSpent.value > 0 ? totalSpent.value / daysToDivide : 0
 })
 
+const chartType = ref<'pie' | 'bar'>('pie')
+const chartOptions = [
+  { label: 'Pie Chart', value: 'pie' },
+  { label: 'Bar Chart', value: 'bar' }
+]
+
+const hoveredCategoryId = ref<string | null>(null)
+
 const categoryBreakdown = computed(() => {
   return budgetSummaries.value
     .map((b) => {
@@ -70,6 +78,99 @@ const categoryBreakdown = computed(() => {
       }
     })
     .sort((a, b) => b.spent - a.spent)
+})
+
+const activeCategories = computed(() => {
+  return categoryBreakdown.value.filter(c => c.spent > 0)
+})
+
+const hoveredCategory = computed(() => {
+  if (!hoveredCategoryId.value) return null
+  return activeCategories.value.find(c => c.id === hoveredCategoryId.value) || null
+})
+
+const defaultPalette = [
+  '#3b82f6', // blue / primary
+  '#10b981', // emerald
+  '#f59e0b', // amber
+  '#f43f5e', // rose
+  '#8b5cf6', // violet
+  '#06b6d4', // cyan
+  '#ec4899', // pink
+  '#14b8a6', // teal
+  '#f97316', // orange
+  '#6366f1' // indigo
+]
+
+function getCategoryColor(color?: string, index = 0): string {
+  switch (color) {
+    case 'emerald':
+      return '#10b981'
+    case 'amber':
+      return '#f59e0b'
+    case 'rose':
+      return '#f43f5e'
+    case 'violet':
+      return '#8b5cf6'
+    case 'cyan':
+      return '#06b6d4'
+    case 'primary':
+      return '#3b82f6'
+    default:
+      return defaultPalette[index % defaultPalette.length] || '#3b82f6'
+  }
+}
+
+const pieSegments = computed(() => {
+  if (totalSpent.value <= 0) return []
+  const C = 2 * Math.PI * 68
+  let accumulated = 0
+
+  return activeCategories.value.map((cat, index) => {
+    const fraction = cat.spent / totalSpent.value
+    const length = fraction * C
+    const offset = -(accumulated * C)
+    accumulated += fraction
+    return {
+      ...cat,
+      colorHex: getCategoryColor(cat.color, index),
+      dasharray: `${length} ${C}`,
+      dashoffset: offset
+    }
+  })
+})
+
+const maxCategorySpent = computed(() => {
+  if (activeCategories.value.length === 0) return 1
+  return Math.max(...activeCategories.value.map(c => c.spent), 1)
+})
+
+const svgBarItems = computed(() => {
+  const items = activeCategories.value
+  const count = items.length
+  if (count === 0) return []
+
+  const totalPlotWidth = 420
+  const barWidth = Math.min(46, Math.max(22, Math.floor(totalPlotWidth / count) - 16))
+  const spacing = count > 1 ? (totalPlotWidth - count * barWidth) / (count - 1) : 0
+  const baselineY = 175
+  const maxH = 140
+
+  return items.map((cat, index) => {
+    const x = 60 + index * (barWidth + spacing)
+    const height = Math.max(6, Math.round((cat.spent / maxCategorySpent.value) * maxH))
+    const y = baselineY - height
+    const colorHex = getCategoryColor(cat.color, index)
+
+    return {
+      ...cat,
+      x,
+      y,
+      width: barWidth,
+      height,
+      colorHex
+    }
+  })
 })
 
 const paymentMethodBreakdown = computed(() => {
@@ -372,68 +473,330 @@ function getPaymentMethodIcon(method: string) {
         v-else
         class="grid grid-cols-1 gap-6 lg:grid-cols-2"
       >
-        <!-- Panel 1: Category Breakdown -->
+        <!-- Panel 1: Category Breakdown & Interactive Charts -->
         <UCard>
           <template #header>
-            <div>
-              <h3 class="font-semibold text-highlighted">
-                Spending by Budget Category
-              </h3>
-              <p class="text-xs text-muted">
-                Distribution of your {{ formatCurrency(totalSpent) }} total monthly expenses across categories.
-              </p>
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div>
+                <h3 class="font-semibold text-highlighted">
+                  Spending by Budget Category
+                </h3>
+                <p class="text-xs text-muted">
+                  Compare how much each budget has spent this month.
+                </p>
+              </div>
+
+              <div class="w-36 shrink-0">
+                <USelect
+                  v-model="chartType"
+                  :items="chartOptions"
+                  size="xs"
+                />
+              </div>
             </div>
           </template>
 
-          <div class="space-y-5">
-            <div
-              v-for="cat in categoryBreakdown"
-              :key="cat.id"
-              class="space-y-1.5"
-            >
-              <div class="flex items-center justify-between text-sm">
-                <div class="flex items-center gap-2">
-                  <UIcon
-                    :name="cat.icon || 'i-lucide-wallet'"
-                    class="size-4"
-                    :class="{
-                      'text-emerald-500': cat.color === 'emerald',
-                      'text-amber-500': cat.color === 'amber',
-                      'text-rose-500': cat.color === 'rose',
-                      'text-violet-500': cat.color === 'violet',
-                      'text-cyan-500': cat.color === 'cyan',
-                      'text-primary': !cat.color || cat.color === 'primary'
-                    }"
-                  />
-                  <span class="font-medium text-highlighted">{{ cat.name }}</span>
-                  <span class="text-xs text-muted">({{ cat.shareOfTotalSpent }}% of spend)</span>
-                </div>
+          <!-- If no active expenses -->
+          <div
+            v-if="activeCategories.length === 0"
+            class="py-12 text-center"
+          >
+            <UIcon
+              name="i-lucide-receipt"
+              class="mx-auto size-8 text-muted mb-2"
+            />
+            <p class="text-sm font-medium text-highlighted">
+              No expenses recorded for {{ selectedMonth }}
+            </p>
+            <p class="text-xs text-muted mt-1">
+              Add transactions under your budgets to visualize spending charts.
+            </p>
+          </div>
 
-                <div class="text-right">
-                  <span class="font-bold text-highlighted">{{ formatCurrency(cat.spent) }}</span>
-                  <span class="text-xs text-muted"> / {{ formatCurrency(Number(cat.amount)) }}</span>
+          <!-- Chart View: Pie Chart -->
+          <div
+            v-else-if="chartType === 'pie'"
+            class="space-y-6"
+          >
+            <!-- Donut Chart & Center Metric -->
+            <div class="flex flex-col sm:flex-row items-center justify-center gap-6 py-2">
+              <div class="relative size-52 shrink-0 flex items-center justify-center">
+                <svg
+                  class="size-full -rotate-90"
+                  viewBox="0 0 200 200"
+                >
+                  <!-- Background Circle -->
+                  <circle
+                    cx="100"
+                    cy="100"
+                    r="68"
+                    class="stroke-neutral-100 dark:stroke-neutral-800"
+                    stroke-width="26"
+                    fill="none"
+                  />
+                  <!-- Slices -->
+                  <circle
+                    v-for="slice in pieSegments"
+                    :key="slice.id"
+                    cx="100"
+                    cy="100"
+                    r="68"
+                    fill="none"
+                    :stroke="slice.colorHex"
+                    stroke-width="26"
+                    :stroke-dasharray="slice.dasharray"
+                    :stroke-dashoffset="slice.dashoffset"
+                    class="transition-all duration-300 cursor-pointer"
+                    :class="{ 'opacity-100 stroke-[30px]': hoveredCategoryId === slice.id, 'opacity-90 hover:opacity-100': hoveredCategoryId !== slice.id }"
+                    @mouseenter="hoveredCategoryId = slice.id"
+                    @mouseleave="hoveredCategoryId = null"
+                  />
+                </svg>
+
+                <!-- Center Text -->
+                <div class="absolute inset-0 flex flex-col items-center justify-center pointer-events-none text-center px-4">
+                  <template v-if="hoveredCategory">
+                    <span class="text-xs font-semibold text-muted truncate max-w-30">
+                      {{ hoveredCategory.name }}
+                    </span>
+                    <span class="text-sm font-bold text-highlighted leading-tight mt-0.5">
+                      {{ formatCurrency(hoveredCategory.spent) }}
+                    </span>
+                    <span class="text-[11px] font-medium text-primary mt-0.5">
+                      {{ hoveredCategory.shareOfTotalSpent }}% of total
+                    </span>
+                  </template>
+                  <template v-else>
+                    <span class="text-[11px] uppercase tracking-wider text-muted font-medium">
+                      Total Spent
+                    </span>
+                    <span class="text-sm font-bold text-highlighted leading-tight mt-0.5">
+                      {{ formatCurrency(totalSpent) }}
+                    </span>
+                    <span class="text-[11px] text-muted mt-0.5">
+                      {{ activeCategories.length }} categories
+                    </span>
+                  </template>
                 </div>
               </div>
 
-              <UProgress
-                :model-value="cat.percentage"
-                :color="cat.remaining < 0 ? 'error' : cat.status === 'warning' ? 'warning' : 'primary'"
-                size="sm"
-              />
+              <!-- Interactive Legend -->
+              <div class="flex-1 w-full space-y-2 max-h-56 overflow-y-auto pr-1">
+                <div
+                  v-for="cat in pieSegments"
+                  :key="cat.id"
+                  class="flex items-center justify-between p-1.5 rounded-lg text-xs transition-colors cursor-pointer"
+                  :class="hoveredCategoryId === cat.id ? 'bg-elevated' : 'hover:bg-elevated/50'"
+                  @mouseenter="hoveredCategoryId = cat.id"
+                  @mouseleave="hoveredCategoryId = null"
+                >
+                  <div class="flex items-center gap-2 min-w-0">
+                    <span
+                      class="size-2.5 rounded-full shrink-0"
+                      :style="{ backgroundColor: cat.colorHex }"
+                    />
+                    <span class="font-medium text-highlighted truncate max-w-32.5">
+                      {{ cat.name }}
+                    </span>
+                  </div>
+                  <div class="flex items-center gap-2 shrink-0">
+                    <span class="font-semibold text-highlighted">
+                      {{ formatCurrency(cat.spent) }}
+                    </span>
+                    <span class="text-muted w-9 text-right font-medium">
+                      {{ cat.shareOfTotalSpent }}%
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
 
-              <div class="flex justify-between text-xs text-muted">
-                <span>
-                  {{ cat.remaining < 0 ? 'Over budget by ' + formatCurrency(Math.abs(cat.remaining)) : formatCurrency(cat.remaining) + ' remaining' }}
+            <!-- Detailed Budget Limits Progress List -->
+            <div class="border-t border-default pt-4 space-y-3">
+              <h4 class="text-xs font-semibold uppercase tracking-wider text-muted">
+                Category Limits & Progress
+              </h4>
+              <div
+                v-for="cat in categoryBreakdown"
+                :key="cat.id"
+                class="space-y-1"
+              >
+                <div class="flex items-center justify-between text-xs">
+                  <span class="font-medium text-highlighted truncate">{{ cat.name }}</span>
+                  <span class="text-muted">
+                    <span class="font-semibold text-highlighted">{{ formatCurrency(cat.spent) }}</span> / {{ formatCurrency(Number(cat.amount)) }}
+                  </span>
+                </div>
+                <UProgress
+                  :model-value="cat.percentage"
+                  :color="cat.remaining < 0 ? 'error' : cat.status === 'warning' ? 'warning' : 'primary'"
+                  size="xs"
+                />
+              </div>
+            </div>
+          </div>
+
+          <!-- Chart View: Bar Chart -->
+          <div
+            v-else
+            class="space-y-6"
+          >
+            <!-- SVG Column Bar Graph -->
+            <div class="w-full overflow-x-auto pb-1">
+              <div class="min-w-105">
+                <svg
+                  viewBox="0 0 500 220"
+                  class="w-full h-48 select-none"
+                >
+                  <!-- Horizontal Grid Lines -->
+                  <line
+                    x1="60"
+                    y1="35"
+                    x2="480"
+                    y2="35"
+                    class="stroke-neutral-200 dark:stroke-neutral-800"
+                    stroke-dasharray="3 3"
+                  />
+                  <text
+                    x="52"
+                    y="39"
+                    text-anchor="end"
+                    class="text-[10px] fill-neutral-400 font-mono"
+                  >
+                    {{ formatCurrency(maxCategorySpent) }}
+                  </text>
+
+                  <line
+                    x1="60"
+                    y1="105"
+                    x2="480"
+                    y2="105"
+                    class="stroke-neutral-200 dark:stroke-neutral-800"
+                    stroke-dasharray="3 3"
+                  />
+                  <text
+                    x="52"
+                    y="109"
+                    text-anchor="end"
+                    class="text-[10px] fill-neutral-400 font-mono"
+                  >
+                    {{ formatCurrency(Math.round(maxCategorySpent / 2)) }}
+                  </text>
+
+                  <line
+                    x1="60"
+                    y1="175"
+                    x2="480"
+                    y2="175"
+                    class="stroke-neutral-300 dark:stroke-neutral-700"
+                  />
+                  <text
+                    x="52"
+                    y="179"
+                    text-anchor="end"
+                    class="text-[10px] fill-neutral-400 font-mono"
+                  >
+                    Rp 0
+                  </text>
+
+                  <!-- Vertical Bars -->
+                  <g
+                    v-for="bar in svgBarItems"
+                    :key="bar.id"
+                    class="cursor-pointer group"
+                    @mouseenter="hoveredCategoryId = bar.id"
+                    @mouseleave="hoveredCategoryId = null"
+                  >
+                    <rect
+                      :x="bar.x"
+                      :y="bar.y"
+                      :width="bar.width"
+                      :height="bar.height"
+                      rx="4"
+                      :fill="bar.colorHex"
+                      class="transition-all duration-300"
+                      :class="hoveredCategoryId === bar.id ? 'opacity-100 filter brightness-110' : 'opacity-85 hover:opacity-100'"
+                    />
+
+                    <!-- Value above bar when hovered -->
+                    <text
+                      v-if="hoveredCategoryId === bar.id"
+                      :x="bar.x + bar.width / 2"
+                      :y="bar.y - 6"
+                      text-anchor="middle"
+                      class="text-[10px] font-bold fill-neutral-900 dark:fill-white font-mono"
+                    >
+                      {{ formatCurrency(bar.spent) }}
+                    </text>
+
+                    <!-- Category Name below bar -->
+                    <text
+                      :x="bar.x + bar.width / 2"
+                      y="193"
+                      text-anchor="middle"
+                      class="text-[10px] fill-neutral-600 dark:fill-neutral-400 font-medium"
+                      :class="{ 'font-bold fill-primary': hoveredCategoryId === bar.id }"
+                    >
+                      {{ bar.name.length > 8 ? bar.name.slice(0, 7) + '…' : bar.name }}
+                    </text>
+                  </g>
+                </svg>
+              </div>
+            </div>
+
+            <!-- Ranked Comparative Breakdown (Which budget spent most than others) -->
+            <div class="border-t border-default pt-4 space-y-3">
+              <div class="flex items-center justify-between">
+                <h4 class="text-xs font-semibold uppercase tracking-wider text-muted">
+                  Spending Ranking (Highest to Lowest)
+                </h4>
+                <span class="text-xs text-muted">
+                  Top spender: <strong class="text-highlighted">{{ activeCategories[0]?.name }}</strong>
                 </span>
-                <span>
-                  {{ cat.percentage }}% limit reached
-                </span>
+              </div>
+
+              <div class="space-y-3">
+                <div
+                  v-for="(cat, index) in activeCategories"
+                  :key="cat.id"
+                  class="p-2 rounded-lg transition-colors"
+                  :class="hoveredCategoryId === cat.id ? 'bg-elevated' : 'hover:bg-elevated/40'"
+                  @mouseenter="hoveredCategoryId = cat.id"
+                  @mouseleave="hoveredCategoryId = null"
+                >
+                  <div class="flex items-center justify-between text-xs mb-1">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <span
+                        class="px-1.5 py-0.5 rounded text-[10px] font-bold"
+                        :class="index === 0 ? 'bg-amber-500/20 text-amber-600 dark:text-amber-400' : 'bg-neutral-100 dark:bg-neutral-800 text-muted'"
+                      >
+                        #{{ index + 1 }}
+                      </span>
+                      <span class="font-medium text-highlighted truncate">{{ cat.name }}</span>
+                    </div>
+
+                    <div class="flex items-center gap-2">
+                      <span class="font-bold text-highlighted">{{ formatCurrency(cat.spent) }}</span>
+                      <span class="text-muted font-medium">({{ cat.shareOfTotalSpent }}%)</span>
+                    </div>
+                  </div>
+
+                  <!-- Relative Comparison Bar -->
+                  <div class="w-full bg-neutral-100 dark:bg-neutral-800 h-2 rounded-full overflow-hidden">
+                    <div
+                      class="h-full rounded-full transition-all duration-500"
+                      :style="{
+                        width: `${Math.round((cat.spent / maxCategorySpent) * 100)}%`,
+                        backgroundColor: getCategoryColor(cat.color, index)
+                      }"
+                    />
+                  </div>
+                </div>
               </div>
             </div>
           </div>
         </UCard>
 
-        <!-- Panel 2: Payment Method Breakdown -->
         <UCard>
           <template #header>
             <div>
