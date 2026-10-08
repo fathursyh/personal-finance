@@ -86,8 +86,8 @@ const sidebarItems: Array<Omit<NavigationMenuItem[], 'to'> & { to?: RoutePathSch
       icon: 'i-lucide-log-out',
       onSelect: handleLogout,
       ui: {
-        link: 'dark:text-red-400 text-red-600',
-        linkLeadingIcon: 'dark:text-red-400 text-red-600'
+        link: 'dark:text-red-500 text-red-600',
+        linkLeadingIcon: 'dark:text-red-500 text-red-600'
       }
     }
   ]

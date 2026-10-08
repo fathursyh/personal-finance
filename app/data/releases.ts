@@ -70,6 +70,40 @@ export const defaultAuthor: ReleaseAuthor = {
 
 const rawReleases: ChangelogItem[] = [
   {
+    tag: 'v1.10',
+    title: 'Fix Overall Transaction and Budget Mutation Modal',
+    date: '2026-10-15',
+    description: 'A quick fix to ensure that the transaction and budget mutation modals are functioning correctly, resolving issues with data submission and validation.',
+    commitSha: 'abcdef1', // Optional: GitHub commit SHA
+    highlights: [
+      {
+        type: 'feature', // 'feature' | 'improvement' | 'fix'
+        title: 'Feature Title',
+        badgeLabel: 'New Feature',
+        items: [
+          'First bullet point detail',
+          'Second bullet point detail'
+        ]
+      },
+      {
+        type: 'improvement',
+        title: 'Performance or UX Polish',
+        badgeLabel: 'Polish',
+        items: [
+          'Description of what was improved'
+        ]
+      },
+      {
+        type: 'fix',
+        title: 'Bug Fixes',
+        badgeLabel: 'Bug Fix',
+        items: [
+          'Description of what was resolved'
+        ]
+      }
+    ]
+  },
+  {
     tag: 'v1.08',
     title: 'Category-Grouped Daily Timeline, Mobile Compact View & Performance Caching',
     date: '2026-10-08',

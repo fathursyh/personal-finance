@@ -28,7 +28,9 @@ const paymentMethods: { label: string, value: PaymentMethod }[] = [
   { label: 'QRIS', value: 'QRIS' }
 ]
 
-const today = new Date().toISOString().slice(0, 10)
+function getTodayDate() {
+  return new Date().toISOString().slice(0, 10)
+}
 
 const TransactionSchema = z.object({
   description: z.string().min(1, 'Description is required'),
@@ -41,7 +43,7 @@ const TransactionSchema = z.object({
 const form = reactive({
   description: '',
   amount: 0,
-  date: today,
+  date: getTodayDate(),
   payment_method: 'Debit Card' as PaymentMethod,
   budget_id: null as string | null,
   type: 'expense' as TransactionType
@@ -60,27 +62,37 @@ const budgetOptions = computed(() => {
   ]
 })
 
-watch(() => props.transactionToEdit, (tx) => {
-  if (tx) {
-    form.description = tx.description
-    form.amount = Number(tx.amount) || 0
-    form.date = tx.date
-    form.payment_method = tx.payment_method
-    form.budget_id = tx.budget_id
-    form.type = tx.type
+function resetForm() {
+  if (props.transactionToEdit) {
+    form.description = props.transactionToEdit.description
+    form.amount = Number(props.transactionToEdit.amount) || 0
+    form.date = props.transactionToEdit.date
+    form.payment_method = props.transactionToEdit.payment_method
+    form.budget_id = props.transactionToEdit.budget_id
+    form.type = props.transactionToEdit.type
   } else {
     form.description = ''
     form.amount = 0
-    form.date = today
+    form.date = getTodayDate()
     form.payment_method = 'Debit Card'
     form.budget_id = props.defaultBudgetId || (budgets.value[0]?.id ?? null)
     form.type = 'expense'
   }
+}
+
+watch(() => props.transactionToEdit, () => {
+  resetForm()
 }, { immediate: true })
 
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    resetForm()
+  }
+})
+
 watch(() => props.defaultBudgetId, (val) => {
-  if (val && !props.transactionToEdit) {
-    form.budget_id = val
+  if (!props.transactionToEdit) {
+    form.budget_id = val || (budgets.value[0]?.id ?? null)
   }
 })
 
@@ -108,6 +120,7 @@ async function handleSubmit() {
 
     emit('saved')
     emit('update:modelValue', false)
+    resetForm()
   } catch {
     // Toast handled in composable
   }

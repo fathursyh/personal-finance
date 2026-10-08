@@ -2,7 +2,7 @@ import { serverSupabaseClient, serverSupabaseUser } from '#supabase/server'
 import type { Database } from '~/types/database.types'
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event)
+  const user = await serverSupabaseUser(event as any)
   if (!user) {
     throw createError({
       statusCode: 401,
@@ -15,10 +15,10 @@ export default defineEventHandler(async (event) => {
     ? query.month
     : new Date().toISOString().slice(0, 7)
 
-  const config = useRuntimeConfig(event)
+  const config = useRuntimeConfig(event as any)
   const appUrl = config.public.appUrl || 'http://localhost:3000'
 
-  const supabase = await serverSupabaseClient<Database>(event)
+  const supabase = await serverSupabaseClient<Database>(event as any)
   const { data: authData } = await supabase.auth.getUser()
   const userId = authData?.user?.id || (user as { sub?: string, id?: string }).sub || (user as { sub?: string, id?: string }).id
 

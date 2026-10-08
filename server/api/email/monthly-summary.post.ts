@@ -2,7 +2,7 @@ import { serverSupabaseClient, serverSupabaseServiceRole, serverSupabaseUser } f
 import type { Database } from '~/types/database.types'
 
 export default defineEventHandler(async (event) => {
-  const config = useRuntimeConfig(event)
+  const config = useRuntimeConfig(event as any)
   const cronSecret = config.cronSecret || process.env.CRON_SECRET || 'finance-cron-secret-key'
   const appUrl = config.public.appUrl || 'http://localhost:3000'
 
@@ -17,7 +17,7 @@ export default defineEventHandler(async (event) => {
   if (isCronAuthorized) {
     let serviceClient: ReturnType<typeof serverSupabaseServiceRole<Database>>
     try {
-      serviceClient = serverSupabaseServiceRole<Database>(event)
+      serviceClient = serverSupabaseServiceRole<Database>(event as any)
     } catch {
       throw createError({
         statusCode: 500,
@@ -95,7 +95,7 @@ export default defineEventHandler(async (event) => {
   // ==========================================
   // 2. MANUAL USER MODE: Send to logged-in user
   // ==========================================
-  const user = await serverSupabaseUser(event)
+  const user = await serverSupabaseUser(event as any)
   if (!user || !user.email) {
     throw createError({
       statusCode: 401,
@@ -103,7 +103,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const supabase = await serverSupabaseClient<Database>(event)
+  const supabase = await serverSupabaseClient<Database>(event as any)
   const { data: authData } = await supabase.auth.getUser()
   const userId = authData?.user?.id || (user as { sub?: string, id?: string }).sub || (user as { sub?: string, id?: string }).id
 

@@ -50,19 +50,29 @@ const form = reactive({
   color: 'primary'
 })
 
-watch(() => props.budgetToEdit, (budget) => {
-  if (budget) {
-    form.name = budget.name
-    form.amount = Number(budget.amount) || 0
-    form.icon = budget.icon || 'i-lucide-wallet'
-    form.color = budget.color || 'primary'
+function resetForm() {
+  if (props.budgetToEdit) {
+    form.name = props.budgetToEdit.name
+    form.amount = Number(props.budgetToEdit.amount) || 0
+    form.icon = props.budgetToEdit.icon || 'i-lucide-wallet'
+    form.color = props.budgetToEdit.color || 'primary'
   } else {
     form.name = ''
     form.amount = 0
     form.icon = 'i-lucide-wallet'
     form.color = 'primary'
   }
+}
+
+watch(() => props.budgetToEdit, () => {
+  resetForm()
 }, { immediate: true })
+
+watch(() => props.modelValue, (isOpen) => {
+  if (isOpen) {
+    resetForm()
+  }
+})
 
 async function handleSubmit() {
   try {
@@ -84,6 +94,7 @@ async function handleSubmit() {
 
     emit('saved')
     emit('update:modelValue', false)
+    resetForm()
   } catch {
     // Toast already handled inside useBudgets
   }
