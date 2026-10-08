@@ -71,34 +71,31 @@ export const defaultAuthor: ReleaseAuthor = {
 const rawReleases: ChangelogItem[] = [
   {
     tag: 'v1.10',
-    title: 'Fix Overall Transaction and Budget Mutation Modal',
-    date: '2026-10-15',
-    description: 'A quick fix to ensure that the transaction and budget mutation modals are functioning correctly, resolving issues with data submission and validation.',
-    commitSha: 'abcdef1', // Optional: GitHub commit SHA
+    title: 'Modal State Resets, Dark Mode Color Polish & Analytics Enhancements',
+    date: '2026-10-08',
+    commitSha: 'bead5a9',
+    description: 'Resolved stale form state issues across transaction and budget modals by ensuring automatic resets on open and after submission, updated dark mode theme contrasts across finance charts and indicators, and polished analytics health metrics.',
     highlights: [
       {
-        type: 'feature', // 'feature' | 'improvement' | 'fix'
-        title: 'Feature Title',
-        badgeLabel: 'New Feature',
+        type: 'fix',
+        title: 'Transaction & Budget Modal Form Resets',
+        badgeLabel: 'Bug Fix',
+        badgeColor: 'warning',
         items: [
-          'First bullet point detail',
-          'Second bullet point detail'
+          'Automatically clear and reset form inputs whenever opening the Create Transaction or Create Budget modals, preventing old data leakage',
+          'Cleanly reset form states upon successful transaction or budget creation and closing',
+          'Synchronized default budget selection and date picker defaults dynamically on modal open'
         ]
       },
       {
         type: 'improvement',
-        title: 'Performance or UX Polish',
-        badgeLabel: 'Polish',
+        title: 'Analytics Financial Health & Visual Flow',
+        badgeLabel: 'UX Polish',
+        badgeColor: 'success',
         items: [
-          'Description of what was improved'
-        ]
-      },
-      {
-        type: 'fix',
-        title: 'Bug Fixes',
-        badgeLabel: 'Bug Fix',
-        items: [
-          'Description of what was resolved'
+          'Upgraded cash flow comparison with dynamic dual-progress bars showcasing income vs expense share ratios',
+          'Added detailed Net Savings Retained financial health cards with contextual guidance',
+          'Enhanced server-side summary email handlers and Nuxt runtime typing compatibility'
         ]
       }
     ]
