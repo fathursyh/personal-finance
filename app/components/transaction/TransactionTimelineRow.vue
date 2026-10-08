@@ -78,7 +78,7 @@ function getPaymentIcon(method: PaymentMethod) {
 
     <!-- Center Column: Note/Description + Account -->
     <div class="min-w-0 flex-1 px-1 sm:px-2">
-      <p class="text-xs sm:text-sm font-semibold text-highlighted line-clamp-2 break-words leading-snug">
+      <p class="text-xs sm:text-sm font-semibold text-highlighted line-clamp-2 wrap-break-word leading-snug">
         {{ transaction.description }}
       </p>
 
@@ -91,7 +91,6 @@ function getPaymentIcon(method: PaymentMethod) {
       </div>
     </div>
 
-    <!-- Right Column: Amount + Action menu -->
     <div
       class="shrink-0 flex items-center gap-1 sm:gap-2 text-right pl-1 sm:pl-2"
       @click.stop

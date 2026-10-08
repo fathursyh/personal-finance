@@ -129,7 +129,7 @@ function getPaymentIcon(method: string) {
 </script>
 
 <template>
-  <div class="space-y-3.5 sm:space-y-5 pb-16">
+  <div class="space-y-3.5 sm:space-y-5 pb-20 sm:pb-16">
     <!-- Top Action Bar -->
     <div class="flex items-center justify-between gap-2">
       <div>
@@ -253,12 +253,9 @@ function getPaymentIcon(method: string) {
             />
           </div>
           <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
-            <p class="text-sm sm:text-xl lg:text-2xl font-bold text-emerald-500 truncate">
+            <p class="text-sm sm:text-xl font-bold text-emerald-500 truncate">
               {{ formatCurrency(totalIncome) }}
             </p>
-            <span class="text-[9px] sm:text-xs font-medium text-muted truncate">
-              Total inflow
-            </span>
           </div>
         </UCard>
 
@@ -274,7 +271,7 @@ function getPaymentIcon(method: string) {
             />
           </div>
           <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
-            <p class="text-sm sm:text-xl lg:text-2xl font-bold text-highlighted truncate">
+            <p class="text-sm sm:text-xl font-bold text-highlighted truncate">
               {{ formatCurrency(totalSpent) }}
             </p>
             <span
@@ -299,7 +296,7 @@ function getPaymentIcon(method: string) {
           </div>
           <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
             <p
-              class="text-sm sm:text-xl lg:text-2xl font-bold truncate"
+              class="text-sm sm:text-xl font-bold truncate"
               :class="netBalance < 0 ? 'text-rose-500' : 'text-highlighted'"
             >
               {{ formatCurrency(netBalance) }}
@@ -325,7 +322,7 @@ function getPaymentIcon(method: string) {
             />
           </div>
           <div class="mt-1 sm:mt-2 flex flex-col sm:flex-row sm:items-baseline sm:justify-between">
-            <p class="text-sm sm:text-xl lg:text-2xl font-bold text-highlighted truncate">
+            <p class="text-sm sm:text-xl font-bold text-highlighted truncate">
               {{ formatCurrency(totalBudget) }}
             </p>
             <span class="text-[9px] sm:text-xs font-medium text-muted truncate">
@@ -577,6 +574,12 @@ function getPaymentIcon(method: string) {
         </div>
       </UCard>
     </template>
+
+    <!-- Mobile Floating Action Button -->
+    <TransactionFab
+      v-if="budgets.length > 0"
+      @click="openNewTransactionModal(selectedBudgetId || undefined)"
+    />
 
     <!-- Modals -->
     <BudgetModal

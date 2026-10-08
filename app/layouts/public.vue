@@ -2,6 +2,7 @@
 import type { NavigationMenuItem } from '@nuxt/ui'
 import type { RoutePathSchema } from '@typed-router/__paths'
 
+const config = useRuntimeConfig()
 const user = useSupabaseUser()
 
 const navItems: Omit<NavigationMenuItem[], 'to'> & { to?: RoutePathSchema }[] = [
@@ -10,21 +11,28 @@ const navItems: Omit<NavigationMenuItem[], 'to'> & { to?: RoutePathSchema }[] = 
     to: '/',
     icon: 'i-lucide-home'
   },
-  // {
-  //   label: 'Blogs',
-  //   to: '/dashboard',
-  //   icon: 'i-lucide-rss'
-  // },
+  {
+    label: 'Release Notes',
+    to: '/release-notes',
+    icon: 'i-lucide-square-text'
+  },
   {
     label: 'Dashboard',
     to: '/dashboard',
     icon: 'i-lucide-layout-dashboard'
   }
 ]
+const updateText = `Ver. ${config.public.appVersion} has dropped! Checkout the logs.`
+const logUpdateLink = '/release-notes' satisfies RoutePathSchema
 </script>
 
 <template>
   <div class="flex flex-col min-h-screen">
+    <UBanner
+      :title="updateText"
+      close
+      :to="logUpdateLink"
+    />
     <UHeader>
       <template #left>
         <NuxtLink

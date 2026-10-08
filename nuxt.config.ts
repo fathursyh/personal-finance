@@ -19,13 +19,14 @@ export default defineNuxtConfig({
     resendFromEmail: process.env.RESEND_FROM_EMAIL || 'Financial Tracker <onboarding@resend.dev>',
     cronSecret: process.env.CRON_SECRET || 'finance-cron-secret-key',
     public: {
-      appVersion: process.env.PUBLIC_APP_VERSION || '1.00',
+      appVersion: '1.08',
       appUrl: process.env.PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'))
     }
   },
 
   routeRules: {
-    '/dashboard/**': { ssr: false }
+    '/dashboard/**': { ssr: false },
+    '/changelog': { redirect: '/release-notes' }
   },
 
   compatibilityDate: '2026-06-30',
@@ -43,7 +44,7 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '/confirm',
-      exclude: ['/', '/register'],
+      exclude: ['/', '/register', '/release-notes', '/changelog'],
       saveRedirectToCookie: false
     }
   }

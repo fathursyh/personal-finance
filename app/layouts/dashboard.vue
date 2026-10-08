@@ -136,7 +136,7 @@ const sidebarItems: Array<Omit<NavigationMenuItem[], 'to'> & { to?: RoutePathSch
             class="flex items-center gap-2 truncate min-w-0"
           >
             <UAvatar
-              src="https://avatars.githubusercontent.com/u/739984?v=4"
+              icon="i-lucide-user"
               alt="User"
               size="sm"
             />
