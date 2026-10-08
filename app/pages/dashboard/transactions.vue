@@ -344,7 +344,7 @@ function handleOpenCreateBudgetFromTx() {
     <!-- Case 3: Daily Timeline Ledger -->
     <UCard
       v-else
-      class="overflow-hidden p-0"
+      :ui="{ root: 'rounded-lg overflow-visible', body: 'p-0 sm:p-0' }"
     >
       <TransactionDailyGroup
         v-for="group in groupedTransactions"

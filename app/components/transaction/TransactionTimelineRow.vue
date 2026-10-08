@@ -12,6 +12,9 @@ const emit = defineEmits<{
 const { formatCurrency } = useFinancialSummary()
 
 const budgetColorClass = computed(() => {
+  if (props.transaction.type === 'income' && !props.transaction.budget) {
+    return 'bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/20'
+  }
   const color = props.transaction.budget?.color
   switch (color) {
     case 'rose':
@@ -32,7 +35,10 @@ const budgetColorClass = computed(() => {
 })
 
 const budgetDisplayName = computed(() => {
-  return props.transaction.budget?.name || 'LAIN LAIN'
+  if (props.transaction.budget?.name) {
+    return props.transaction.budget.name
+  }
+  return props.transaction.type === 'income' ? 'INCOME' : 'LAIN LAIN'
 })
 
 function getPaymentIcon(method: PaymentMethod) {
@@ -55,9 +61,12 @@ function getPaymentIcon(method: PaymentMethod) {
 </script>
 
 <template>
-  <div class="flex items-center justify-between px-2.5 py-1.5 sm:px-4 sm:py-2.5 transition-colors hover:bg-elevated/40">
+  <div
+    class="flex items-center justify-between px-2.5 py-2 sm:px-4 sm:py-2.5 transition-colors hover:bg-elevated/40 cursor-pointer select-none"
+    @click="emit('edit', transaction)"
+  >
     <!-- Left Column: Category Tag -->
-    <div class="w-20 sm:w-24 shrink-0 flex items-center pr-1.5 sm:pr-2">
+    <div class="w-18 sm:w-22 shrink-0 flex items-center pr-1.5 sm:pr-2">
       <span
         class="inline-block max-w-full truncate px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold tracking-wider rounded border uppercase text-center"
         :class="budgetColorClass"
@@ -69,22 +78,11 @@ function getPaymentIcon(method: PaymentMethod) {
 
     <!-- Center Column: Note/Description + Account -->
     <div class="min-w-0 flex-1 px-1 sm:px-2">
-      <div class="flex items-center gap-1.5">
-        <p class="text-xs sm:text-sm font-semibold text-highlighted truncate">
-          {{ transaction.description }}
-        </p>
-        <UBadge
-          v-if="transaction.type === 'income'"
-          color="success"
-          variant="subtle"
-          size="xs"
-          class="shrink-0 text-[9px] py-0 px-1"
-        >
-          Income
-        </UBadge>
-      </div>
+      <p class="text-xs sm:text-sm font-semibold text-highlighted line-clamp-2 break-words leading-snug">
+        {{ transaction.description }}
+      </p>
 
-      <div class="mt-0.5 flex items-center gap-1 text-[10px] sm:text-xs text-muted truncate">
+      <div class="mt-0.5 flex items-center gap-1.5 text-[10px] sm:text-xs text-muted truncate">
         <UIcon
           :name="getPaymentIcon(transaction.payment_method)"
           class="size-3 sm:size-3.5 shrink-0"
@@ -94,7 +92,10 @@ function getPaymentIcon(method: PaymentMethod) {
     </div>
 
     <!-- Right Column: Amount + Action menu -->
-    <div class="shrink-0 flex items-center gap-1 sm:gap-2 text-right pl-1 sm:pl-2">
+    <div
+      class="shrink-0 flex items-center gap-1 sm:gap-2 text-right pl-1 sm:pl-2"
+      @click.stop
+    >
       <span
         class="text-xs sm:text-sm font-bold whitespace-nowrap"
         :class="transaction.type === 'income' ? 'text-emerald-500' : 'text-rose-500'"
@@ -115,7 +116,7 @@ function getPaymentIcon(method: PaymentMethod) {
           color="neutral"
           variant="ghost"
           size="xs"
-          class="size-6 p-0"
+          class="size-6 p-0 text-muted hover:text-highlighted"
           aria-label="Actions"
         />
       </UDropdownMenu>

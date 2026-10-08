@@ -17,7 +17,7 @@ const { formatCurrency } = useFinancialSummary()
   <div class="border-b border-default last:border-b-0">
     <!-- Sticky Date Header -->
     <div
-      class="sticky top-12 sm:top-14 z-10 flex items-center justify-between px-2.5 py-1.5 sm:px-4 sm:py-2 bg-elevated/95 backdrop-blur-md border-y border-default/70"
+      class="sticky top-0 z-10 flex items-center justify-between px-2.5 py-1.5 sm:px-4 sm:py-2 bg-elevated border-b border-default shadow-2xs"
     >
       <!-- Left side: Day number + Day-of-week pill -->
       <div class="flex items-center gap-1.5 sm:gap-2">
@@ -67,7 +67,7 @@ const { formatCurrency } = useFinancialSummary()
 
     <!-- Category / Budget Subtotals Pill Bar (if multiple categories) -->
     <div
-      v-if="group.budgetSubtotals.length > 0"
+      v-if="group.budgetSubtotals.length > 1"
       class="flex flex-wrap items-center gap-1 px-2.5 py-1 sm:px-4 bg-muted/20 border-b border-default/30 text-[10px]"
     >
       <span class="text-[9px] font-semibold uppercase tracking-wider text-muted mr-0.5">
