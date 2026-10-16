@@ -9,7 +9,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="fixed bottom-5 end-5 z-40 sm:hidden">
+  <div class="fixed bottom-5 inset-e-5 z-40 sm:hidden">
     <UButton
       icon="i-lucide-plus"
       color="primary"
@@ -21,4 +21,3 @@ const emit = defineEmits<{
     />
   </div>
 </template>
-

@@ -11,6 +11,7 @@
     "typecheck": "nuxt typecheck"
   },
   "dependencies": {
+    "@google/genai": "^2.30.0",
     "@iconify-json/lucide": "^1.2.137",
     "@nuxt/image": "2.1.0",
     "@nuxt/ui": "^4.11.2",

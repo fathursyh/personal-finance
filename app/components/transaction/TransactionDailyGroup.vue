@@ -17,16 +17,16 @@ const { formatCurrency } = useFinancialSummary()
   <div class="border-b border-default last:border-b-0">
     <!-- Sticky Date Header -->
     <div
-      class="sticky top-0 z-10 flex items-center justify-between px-2.5 py-1.5 sm:px-4 sm:py-2 bg-elevated border-b border-default shadow-2xs"
+      class="sticky top-0 z-10 flex items-center justify-between px-2.5 py-2 sm:px-5 sm:py-2.5 bg-elevated border-b border-default shadow-2xs"
     >
       <!-- Left side: Day number + Day-of-week pill -->
-      <div class="flex items-center gap-1.5 sm:gap-2">
-        <span class="text-sm sm:text-base font-bold text-highlighted">
+      <div class="flex items-center gap-2 sm:gap-2.5">
+        <span class="text-base sm:text-xl font-bold font-mono text-highlighted">
           {{ group.dayNumber }}
         </span>
 
         <span
-          class="px-1.5 py-0.5 text-[10px] sm:text-xs font-semibold rounded"
+          class="px-2 py-0.5 text-[10px] sm:text-xs font-semibold rounded-md"
           :class="{
             'bg-rose-500/15 text-rose-500 dark:text-rose-400': group.isSunday,
             'bg-blue-500/15 text-blue-500 dark:text-blue-400': group.isSaturday,
@@ -41,24 +41,24 @@ const { formatCurrency } = useFinancialSummary()
           color="primary"
           variant="subtle"
           size="xs"
-          class="text-[9px] py-0 px-1"
+          class="text-[10px] sm:text-xs py-0.5 px-1.5 font-medium"
         >
           Today
         </UBadge>
       </div>
 
       <!-- Right side: Daily Income & Expense totals -->
-      <div class="flex items-center gap-2 sm:gap-3 text-xs sm:text-sm">
+      <div class="flex items-center gap-2.5 sm:gap-4">
         <span
           v-if="group.totalIncome > 0"
-          class="font-semibold text-emerald-500 text-[11px] sm:text-xs"
+          class="font-bold font-mono text-emerald-500 dark:text-emerald-400 text-xs sm:text-sm"
         >
           +{{ formatCurrency(group.totalIncome) }}
         </span>
 
         <span
-          class="font-bold text-xs sm:text-sm"
-          :class="group.totalExpense > 0 ? 'text-rose-500' : 'text-muted'"
+          class="font-bold font-mono text-xs sm:text-sm"
+          :class="group.totalExpense > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-muted'"
         >
           {{ group.totalExpense > 0 ? '-' : '' }}{{ formatCurrency(group.totalExpense) }}
         </span>
@@ -68,22 +68,22 @@ const { formatCurrency } = useFinancialSummary()
     <!-- Category / Budget Subtotals Pill Bar (if multiple categories) -->
     <div
       v-if="group.budgetSubtotals.length > 1"
-      class="flex flex-wrap items-center gap-1 px-2.5 py-1 sm:px-4 bg-muted/20 border-b border-default/30 text-[10px]"
+      class="flex flex-wrap items-center gap-1.5 sm:gap-2 px-2.5 py-1.5 sm:px-5 sm:py-2 bg-muted/15 border-b border-default/30"
     >
-      <span class="text-[9px] font-semibold uppercase tracking-wider text-muted mr-0.5">
+      <span class="text-[10px] sm:text-xs font-semibold uppercase tracking-wider text-muted mr-0.5">
         Breakdown:
       </span>
       <div
         v-for="sub in group.budgetSubtotals"
         :key="sub.budgetName"
-        class="inline-flex items-center gap-1 rounded px-1.5 py-0.5 bg-elevated border border-default/50 text-[9px] sm:text-[10px]"
+        class="inline-flex items-center gap-1.5 rounded-md px-2 py-0.5 bg-elevated border border-default/50 text-[10px] sm:text-xs"
       >
         <span class="font-bold text-highlighted uppercase">
           {{ sub.budgetName }}:
         </span>
         <span
-          class="font-medium"
-          :class="sub.totalExpense > 0 ? 'text-rose-500' : 'text-emerald-500'"
+          class="font-semibold font-mono"
+          :class="sub.totalExpense > 0 ? 'text-rose-500 dark:text-rose-400' : 'text-emerald-500 dark:text-emerald-400'"
         >
           {{ formatCurrency(sub.totalExpense > 0 ? sub.totalExpense : sub.totalIncome) }}
         </span>

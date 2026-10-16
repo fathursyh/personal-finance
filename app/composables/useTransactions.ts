@@ -233,6 +233,55 @@ export function useTransactions() {
     }
   }
 
+  async function createBatchTransactions(payloads: Omit<TransactionInsert, 'user_id'>[]) {
+    if (payloads.length === 0) return []
+    const { data: authData } = await supabase.auth.getUser()
+    const activeUserId = authData.user?.id || user.value?.id
+
+    if (!activeUserId) {
+      throw new Error('You must be logged in to import transactions.')
+    }
+
+    loading.value = true
+    try {
+      const rowsToInsert = payloads.map(p => ({
+        ...p,
+        user_id: activeUserId
+      }))
+
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert(rowsToInsert)
+        .select('*, budget:budgets(*)')
+
+      if (error) throw error
+
+      toast.add({
+        title: 'Transactions imported',
+        description: `Successfully imported ${payloads.length} transaction${payloads.length > 1 ? 's' : ''}.`,
+        color: 'success'
+      })
+
+      invalidateCache()
+      await Promise.all([
+        fetchTransactions(selectedMonth.value, true),
+        refreshBudgets()
+      ])
+
+      return data as unknown as TransactionWithBudget[]
+    } catch (err: unknown) {
+      const error = err as { message?: string }
+      toast.add({
+        title: 'Error importing transactions',
+        description: error.message ?? 'Failed to batch save transactions.',
+        color: 'error'
+      })
+      throw err
+    } finally {
+      loading.value = false
+    }
+  }
+
   return {
     transactions,
     selectedMonth,
@@ -241,6 +290,7 @@ export function useTransactions() {
     fetchTransactions,
     invalidateCache,
     createTransaction,
+    createBatchTransactions,
     updateTransaction,
     deleteTransaction
   }

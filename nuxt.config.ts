@@ -18,6 +18,7 @@ export default defineNuxtConfig({
     resendApiKey: process.env.RESEND_API_KEY || '',
     resendFromEmail: process.env.RESEND_FROM_EMAIL || 'Financial Tracker <onboarding@resend.dev>',
     cronSecret: process.env.CRON_SECRET || 'finance-cron-secret-key',
+    geminiApiKey: process.env.GEMINI_API_KEY || '',
     public: {
       appVersion: '1.10',
       appUrl: process.env.PUBLIC_APP_URL || process.env.NUXT_PUBLIC_SITE_URL || (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000'))

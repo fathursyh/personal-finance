@@ -508,11 +508,11 @@ function getPaymentIcon(method: string) {
           <div
             v-for="tx in selectedBudgetTransactions"
             :key="tx.id"
-            class="flex items-center justify-between py-1.5 sm:py-2 hover:bg-elevated/50 px-2 rounded-lg transition-colors"
+            class="flex items-center justify-between py-2 sm:py-3.5 hover:bg-elevated/60 px-2 sm:px-3 rounded-lg transition-colors"
           >
-            <div class="flex items-center gap-2 sm:gap-3 min-w-0">
+            <div class="flex items-center gap-2.5 sm:gap-3.5 min-w-0">
               <div
-                class="flex size-7 sm:size-8 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
+                class="flex size-8 sm:size-9 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary"
                 :class="{
                   'bg-emerald-500/10 text-emerald-500': selectedBudget.color === 'emerald',
                   'bg-amber-500/10 text-amber-500': selectedBudget.color === 'amber',
@@ -523,21 +523,21 @@ function getPaymentIcon(method: string) {
               >
                 <UIcon
                   :name="selectedBudget.icon || 'i-lucide-receipt'"
-                  class="size-3.5 sm:size-4"
+                  class="size-4 sm:size-5"
                 />
               </div>
 
               <div class="min-w-0 truncate">
-                <p class="text-xs sm:text-sm font-medium text-highlighted truncate">
+                <p class="text-xs sm:text-base font-semibold text-highlighted truncate">
                   {{ tx.description }}
                 </p>
-                <p class="text-[10px] sm:text-xs text-muted flex items-center gap-1.5">
-                  <span>{{ tx.date }}</span>
+                <p class="text-[10px] sm:text-xs text-muted flex items-center gap-1.5 sm:gap-2 mt-0.5">
+                  <span class="font-medium">{{ tx.date }}</span>
                   <span>•</span>
                   <span class="inline-flex items-center gap-1">
                     <UIcon
                       :name="getPaymentIcon(tx.payment_method)"
-                      class="size-2.5 sm:size-3"
+                      class="size-3 sm:size-3.5 text-muted"
                     />
                     {{ tx.payment_method }}
                   </span>
@@ -545,10 +545,10 @@ function getPaymentIcon(method: string) {
               </div>
             </div>
 
-            <div class="flex items-center gap-2 sm:gap-3">
+            <div class="flex items-center gap-2 sm:gap-3.5">
               <span
-                class="text-xs sm:text-sm font-semibold whitespace-nowrap"
-                :class="tx.type === 'income' ? 'text-emerald-500' : 'text-highlighted'"
+                class="text-xs sm:text-base md:text-lg font-bold font-mono tracking-tight whitespace-nowrap"
+                :class="tx.type === 'income' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'"
               >
                 {{ tx.type === 'income' ? '+' : '-' }}{{ formatCurrency(Number(tx.amount)) }}
               </span>
@@ -566,6 +566,7 @@ function getPaymentIcon(method: string) {
                   color="neutral"
                   variant="ghost"
                   size="xs"
+                  class="size-7 sm:size-8 p-0 text-muted hover:text-highlighted"
                   aria-label="Actions"
                 />
               </UDropdownMenu>

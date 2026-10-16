@@ -62,13 +62,13 @@ function getPaymentIcon(method: PaymentMethod) {
 
 <template>
   <div
-    class="flex items-center justify-between px-2.5 py-2 sm:px-4 sm:py-2.5 transition-colors hover:bg-elevated/40 cursor-pointer select-none"
+    class="flex items-center justify-between px-2.5 py-2.5 sm:px-5 sm:py-3.5 transition-colors hover:bg-elevated/60 cursor-pointer select-none group"
     @click="emit('edit', transaction)"
   >
     <!-- Left Column: Category Tag -->
-    <div class="w-18 sm:w-22 shrink-0 flex items-center pr-1.5 sm:pr-2">
+    <div class="w-20 sm:w-32 md:w-36 shrink-0 flex items-center pr-2 sm:pr-3">
       <span
-        class="inline-block max-w-full truncate px-1.5 py-0.5 text-[9px] sm:text-[10px] font-bold tracking-wider rounded border uppercase text-center"
+        class="inline-block max-w-full truncate px-2 py-0.5 sm:py-1 text-[9px] sm:text-xs font-bold tracking-wide rounded-md border uppercase text-center"
         :class="budgetColorClass"
         :title="budgetDisplayName"
       >
@@ -77,27 +77,28 @@ function getPaymentIcon(method: PaymentMethod) {
     </div>
 
     <!-- Center Column: Note/Description + Account -->
-    <div class="min-w-0 flex-1 px-1 sm:px-2">
-      <p class="text-xs sm:text-sm font-semibold text-highlighted line-clamp-2 wrap-break-word leading-snug">
+    <div class="min-w-0 flex-1 px-1.5 sm:px-3">
+      <p class="text-xs sm:text-base font-semibold text-highlighted line-clamp-2 wrap-break-word leading-snug">
         {{ transaction.description }}
       </p>
 
-      <div class="mt-0.5 flex items-center gap-1.5 text-[10px] sm:text-xs text-muted truncate">
+      <div class="mt-0.5 sm:mt-1 flex items-center gap-1.5 sm:gap-2 text-[10px] sm:text-xs text-muted truncate">
         <UIcon
           :name="getPaymentIcon(transaction.payment_method)"
-          class="size-3 sm:size-3.5 shrink-0"
+          class="size-3.5 sm:size-4 shrink-0 text-muted"
         />
-        <span class="truncate">{{ transaction.payment_method }}</span>
+        <span class="truncate font-medium">{{ transaction.payment_method }}</span>
       </div>
     </div>
 
+    <!-- Right Column: Amount + Actions -->
     <div
-      class="shrink-0 flex items-center gap-1 sm:gap-2 text-right pl-1 sm:pl-2"
+      class="shrink-0 flex items-center gap-1.5 sm:gap-3 text-right pl-2 sm:pl-3"
       @click.stop
     >
       <span
-        class="text-xs sm:text-sm font-bold whitespace-nowrap"
-        :class="transaction.type === 'income' ? 'text-emerald-500' : 'text-rose-500'"
+        class="text-xs sm:text-base md:text-lg font-bold font-mono tracking-tight whitespace-nowrap"
+        :class="transaction.type === 'income' ? 'text-emerald-500 dark:text-emerald-400' : 'text-rose-500 dark:text-rose-400'"
       >
         {{ transaction.type === 'income' ? '+' : '-' }}{{ formatCurrency(Number(transaction.amount)) }}
       </span>
@@ -115,7 +116,7 @@ function getPaymentIcon(method: PaymentMethod) {
           color="neutral"
           variant="ghost"
           size="xs"
-          class="size-6 p-0 text-muted hover:text-highlighted"
+          class="size-7 sm:size-8 p-0 text-muted hover:text-highlighted"
           aria-label="Actions"
         />
       </UDropdownMenu>

@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import StatementImportModal from '~/components/transaction/StatementImportModal.vue'
 import type { TransactionWithBudget } from '~/types/database.types'
 import { groupTransactionsByDate } from '~/utils/timelineGrouping'
 
@@ -23,6 +24,7 @@ const {
 
 const isTransactionModalOpen = ref(false)
 const isBudgetModalOpen = ref(false)
+const isStatementModalOpen = ref(false)
 const transactionToEdit = ref<TransactionWithBudget | null>(null)
 const defaultBudgetId = ref<string | null>(null)
 
@@ -184,10 +186,22 @@ function handleOpenCreateBudgetFromTx() {
         <MonthPicker />
 
         <UButton
+          icon="i-lucide-file-up"
+          color="neutral"
+          variant="outline"
+          size="sm"
+          class="font-medium"
+          @click="isStatementModalOpen = true"
+        >
+          <span class="hidden sm:inline">Import Statement</span>
+          <span class="sm:hidden">Import</span>
+        </UButton>
+
+        <UButton
           icon="i-lucide-plus"
           color="primary"
-          size="xs"
-          class="hidden sm:inline-flex"
+          size="sm"
+          class="hidden sm:inline-flex font-medium"
           @click="openNewTransactionModal()"
         >
           Add Transaction
@@ -203,13 +217,13 @@ function handleOpenCreateBudgetFromTx() {
     />
 
     <!-- Filters & Search Toolbar -->
-    <UCard class="p-2 sm:p-2.5">
+    <UCard class="p-2 sm:p-3">
       <div class="flex items-center gap-1.5 sm:gap-2">
         <UInput
           v-model="searchQuery"
           icon="i-lucide-search"
           placeholder="Search description..."
-          size="xs"
+          size="sm"
           class="flex-1"
         />
 
@@ -217,7 +231,7 @@ function handleOpenCreateBudgetFromTx() {
           :icon="showFilters ? 'i-lucide-filter-x' : 'i-lucide-filter'"
           :color="hasActiveFilters ? 'primary' : 'neutral'"
           :variant="hasActiveFilters ? 'subtle' : 'ghost'"
-          size="xs"
+          size="sm"
           class="sm:hidden"
           :title="showFilters ? 'Hide filters' : 'Show filters'"
           @click="showFilters = !showFilters"
@@ -230,7 +244,7 @@ function handleOpenCreateBudgetFromTx() {
           icon="i-lucide-x"
           color="neutral"
           variant="ghost"
-          size="xs"
+          size="sm"
           title="Reset filters"
           aria-label="Reset filters"
           @click="resetFilters"
@@ -238,27 +252,27 @@ function handleOpenCreateBudgetFromTx() {
       </div>
 
       <div
-        class="gap-1.5 sm:gap-2 mt-2"
+        class="gap-1.5 sm:gap-3 mt-2 sm:mt-2.5"
         :class="showFilters ? 'grid grid-cols-1 sm:grid-cols-3' : 'hidden sm:grid sm:grid-cols-3'"
       >
         <USelect
           v-model="selectedBudgetId"
           :items="budgetFilterOptions"
-          size="xs"
+          size="sm"
           class="w-full"
         />
 
         <USelect
           v-model="selectedPaymentMethod"
           :items="paymentMethodOptions"
-          size="xs"
+          size="sm"
           class="w-full"
         />
 
         <USelect
           v-model="selectedType"
           :items="typeOptions"
-          size="xs"
+          size="sm"
           class="w-full"
         />
       </div>
@@ -355,18 +369,18 @@ function handleOpenCreateBudgetFromTx() {
       />
     </UCard>
 
-    <!-- Floating Action Button (FAB) -->
-    <div class="fixed bottom-5 right-5 sm:bottom-8 sm:right-8 z-30">
+    <!-- Floating Action Button (FAB) - Mobile only -->
+    <div class="fixed bottom-5 right-5 sm:hidden z-30">
       <button
         type="button"
-        class="flex size-12 sm:size-14 items-center justify-center rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-rose-500/30 cursor-pointer"
+        class="flex size-12 items-center justify-center rounded-full bg-rose-500 hover:bg-rose-600 active:scale-95 text-white shadow-lg hover:shadow-xl hover:scale-105 transition-all duration-200 focus:outline-hidden focus:ring-4 focus:ring-rose-500/30 cursor-pointer"
         title="Add Transaction"
         aria-label="Add Transaction"
         @click="openNewTransactionModal()"
       >
         <UIcon
           name="i-lucide-plus"
-          class="size-6 sm:size-7 stroke-[2.5]"
+          class="size-6 stroke-[2.5]"
         />
       </button>
     </div>
@@ -383,6 +397,11 @@ function handleOpenCreateBudgetFromTx() {
     <BudgetModal
       v-model="isBudgetModalOpen"
       @saved="refreshAllData"
+    />
+
+    <StatementImportModal
+      v-model="isStatementModalOpen"
+      @imported="refreshAllData"
     />
   </div>
 </template>
