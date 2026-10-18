@@ -16,7 +16,7 @@ export interface ParsedTransactionItem {
 }
 
 export default defineEventHandler(async (event) => {
-  const user = await serverSupabaseUser(event)
+  const user = await serverSupabaseUser(event as any)
   if (!user) {
     throw createError({
       statusCode: 401,
@@ -62,7 +62,7 @@ export default defineEventHandler(async (event) => {
     })
   }
 
-  const supabase = await serverSupabaseClient<Database>(event)
+  const supabase = await serverSupabaseClient<Database>(event as any)
 
   // 1. Fetch user's existing budgets for smart categorization
   const { data: userBudgets } = await supabase

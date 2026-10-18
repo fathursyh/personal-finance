@@ -70,6 +70,48 @@ export const defaultAuthor: ReleaseAuthor = {
 
 const rawReleases: ChangelogItem[] = [
   {
+    tag: 'v1.12',
+    title: 'AI Bank Statement Parsing, Unbudgeted Analytics & Donut Chart Alignment',
+    date: '2026-10-19',
+    commitSha: '119242f',
+    description: 'Introduced an AI-powered bank statement parser leveraging Google Gemini to automatically extract transactions from PDF and CSV statements, expanded analytics to capture unbudgeted and uncategorized spending, and resolved SVG donut chart hover alignment and center metrics.',
+    highlights: [
+      {
+        type: 'feature',
+        title: 'AI Bank Statement Parsing (Gemini AI)',
+        badgeLabel: 'New Feature',
+        badgeColor: 'primary',
+        items: [
+          'Directly upload PDF and CSV bank statements to extract dates, descriptions, payment methods, amounts, and transaction types using Google Gemini AI',
+          'Interactive statement import modal with batch selection, preview editing, and batch transaction insertion',
+          'Smart automatic categorization mapping extracted transactions directly to existing user budget categories',
+          'Intelligent duplicate detection preventing re-import of transactions already logged in the system'
+        ]
+      },
+      {
+        type: 'improvement',
+        title: 'Unbudgeted Spending Analytics & "Others" Category',
+        badgeLabel: 'Analytics',
+        badgeColor: 'info',
+        items: [
+          'Transactions without an assigned budget are now tracked and aggregated into a dedicated "Others" category',
+          'Unified category metrics, budget progress bars, and top category breakdown with neutral indicator styling',
+          'Zero-limit progress handling cleanly displaying unbudgeted expenditure without overflow errors'
+        ]
+      },
+      {
+        type: 'fix',
+        title: 'Donut Chart Segment Hover & Totals Calibration',
+        badgeLabel: 'Bug Fix',
+        badgeColor: 'warning',
+        items: [
+          'Synchronized pie and donut chart calculations so SVG stroke-dashoffset aligns 1:1 with hovered slices and center category cards',
+          'Aligned unhovered donut center metric to accurately display active category totals matching the chart perimeter sum'
+        ]
+      }
+    ]
+  },
+  {
     tag: 'v1.10',
     title: 'Modal State Resets, Dark Mode Color Polish & Analytics Enhancements',
     date: '2026-10-08',

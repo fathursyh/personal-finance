@@ -61,22 +61,78 @@ const chartOptions = [
 
 const hoveredCategoryId = ref<string | null>(null)
 
-const categoryBreakdown = computed(() => {
-  return budgetSummaries.value
-    .map((b) => {
-      const shareOfTotalSpent = totalSpent.value > 0
-        ? Math.round((b.spent / totalSpent.value) * 100)
-        : 0
-      return {
-        ...b,
-        shareOfTotalSpent
-      }
+export interface CategoryBreakdownItem {
+  id: string
+  name: string
+  amount: number
+  spent: number
+  remaining: number
+  percentage: number
+  status: 'normal' | 'warning' | 'exceeded'
+  icon?: string
+  color?: string
+  shareOfTotalSpent: number
+}
+
+const categoryBreakdown = computed<CategoryBreakdownItem[]>(() => {
+  const items: CategoryBreakdownItem[] = budgetSummaries.value.map((b) => {
+    return {
+      ...b,
+      shareOfTotalSpent: 0
+    }
+  })
+
+  // Known budget IDs
+  const validBudgetIds = new Set(budgets.value.map(b => b.id))
+
+  // Calculate unbudgeted / uncategorized expenses (budget_id is null, empty, 'unbudgeted', or not in budgets)
+  const unbudgetedTxs = transactions.value.filter(t => !t.budget_id || t.budget_id === 'unbudgeted' || !validBudgetIds.has(t.budget_id))
+  
+  const unbudgetedExpenses = unbudgetedTxs
+    .filter(t => t.type === 'expense')
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+
+  const unbudgetedIncome = unbudgetedTxs
+    .filter(t => t.type === 'income')
+    .reduce((sum, t) => sum + (Number(t.amount) || 0), 0)
+
+  const unbudgetedSpent = Math.max(0, unbudgetedExpenses - unbudgetedIncome)
+
+  if (unbudgetedSpent > 0 || unbudgetedExpenses > 0) {
+    const finalSpent = unbudgetedSpent > 0 ? unbudgetedSpent : unbudgetedExpenses
+    items.push({
+      id: 'uncategorized',
+      name: 'Others',
+      spent: finalSpent,
+      amount: 0,
+      remaining: 0,
+      percentage: 100,
+      status: 'normal',
+      icon: 'i-lucide-help-circle',
+      color: 'neutral',
+      shareOfTotalSpent: 0
     })
+  }
+
+  // Calculate total across all active categories so percentages sum to 100%
+  const totalCategorySpent = items.reduce((sum, item) => sum + item.spent, 0)
+
+  return items
+    .map(item => ({
+      ...item,
+      shareOfTotalSpent: totalCategorySpent > 0
+        ? Math.round((item.spent / totalCategorySpent) * 100)
+        : 0
+    }))
     .sort((a, b) => b.spent - a.spent)
 })
 
 const activeCategories = computed(() => {
   return categoryBreakdown.value.filter(c => c.spent > 0)
+})
+
+const totalActiveCategorySpent = computed(() => {
+  return activeCategories.value.reduce((sum, c) => sum + c.spent, 0)
 })
 
 const hoveredCategory = computed(() => {
@@ -111,18 +167,21 @@ function getCategoryColor(color?: string, index = 0): string {
       return '#06b6d4'
     case 'primary':
       return '#3b82f6'
+    case 'neutral':
+      return '#737373'
     default:
       return defaultPalette[index % defaultPalette.length] || '#3b82f6'
   }
 }
 
 const pieSegments = computed(() => {
-  if (totalSpent.value <= 0) return []
+  const total = totalActiveCategorySpent.value
+  if (total <= 0) return []
   const C = 2 * Math.PI * 68
   let accumulated = 0
 
   return activeCategories.value.map((cat, index) => {
-    const fraction = cat.spent / totalSpent.value
+    const fraction = cat.spent / total
     const length = fraction * C
     const offset = -(accumulated * C)
     accumulated += fraction
@@ -619,9 +678,10 @@ function getPaymentMethodIcon(method: string) {
                 :class="{
                   'bg-emerald-500/10 text-emerald-500': topCategory.color === 'emerald',
                   'bg-amber-500/10 text-amber-500': topCategory.color === 'amber',
-                  'bg-rose-500/10 text-rose-500': topCategory.color === 'rose',
+                  'bg-rose-500/10 text-rose-500 dark:bg-rose-600/10 dark:text-rose-600': topCategory.color === 'rose',
                   'bg-violet-500/10 text-violet-500': topCategory.color === 'violet',
-                  'bg-cyan-500/10 text-cyan-500': topCategory.color === 'cyan'
+                  'bg-cyan-500/10 text-cyan-500': topCategory.color === 'cyan',
+                  'bg-neutral-500/10 text-neutral-500 dark:text-neutral-400': topCategory.color === 'neutral'
                 }"
               >
                 <UIcon
@@ -808,7 +868,7 @@ function getPaymentMethodIcon(method: string) {
                         Total Spent
                       </span>
                       <span class="text-sm font-bold text-highlighted leading-tight mt-0.5">
-                        {{ formatCurrency(totalSpent) }}
+                        {{ formatCurrency(totalActiveCategorySpent) }}
                       </span>
                       <span class="text-[11px] text-muted mt-0.5">
                         {{ activeCategories.length }} categories
@@ -861,12 +921,14 @@ function getPaymentMethodIcon(method: string) {
                   <div class="flex items-center justify-between text-xs">
                     <span class="font-medium text-highlighted truncate">{{ cat.name }}</span>
                     <span class="text-muted">
-                      <span class="font-semibold text-highlighted">{{ formatCurrency(cat.spent) }}</span> / {{ formatCurrency(Number(cat.amount)) }}
+                      <span class="font-semibold text-highlighted">{{ formatCurrency(cat.spent) }}</span>
+                      <template v-if="cat.amount > 0"> / {{ formatCurrency(cat.amount) }}</template>
+                      <template v-else> (No limit)</template>
                     </span>
                   </div>
                   <UProgress
-                    :model-value="cat.percentage"
-                    :color="cat.remaining < 0 ? 'error' : cat.status === 'warning' ? 'warning' : 'primary'"
+                    :model-value="cat.amount > 0 ? cat.percentage : 100"
+                    :color="cat.id === 'uncategorized' ? 'neutral' : cat.remaining < 0 ? 'error' : cat.status === 'warning' ? 'warning' : 'primary'"
                     size="xs"
                   />
                 </div>
